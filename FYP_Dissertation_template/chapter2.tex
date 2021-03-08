@@ -9,28 +9,114 @@ During our transition from a monolithic architecture to micro-services we have e
   \item Lack of documentation for APIs: Documenting APIs is crucial, consumers need to know how to make requests, and what responses look like. Ensuring the documentation is up to date and accurate is mandatory in order for an API to be used effectively. Documentation also allows users to study how the API works without having to integrate its usage into their software. 
   \item Duplication of code handling communication between micro-services: Every micro-services will have code responsible for communicating with all of the other micro-services it needs to send requests to. If the API is modified or new endpoints are added, each service consuming the API is going to need to also have the modifications applied. Good API documentation will provide example response and request payloads as well as detailed information about expected error responses. Without this information any integration's will likely run into issues, whether it be processing data retrieved form the API or when errors that the server expects to be returned are not handled correctly. 
   \item The client service lacks knowledge about the shape of the response when a request is made: In a monolithic architecture, all the code is encapsulated under the same umbrella, and so if one part of the system communicates with another part, all of the class information will be provided. This is even more of an issue with external APIs. If we make a request to GitHub, the service making the request needs to know the format and structure of the response so that we can consume the information provided as we need to. Currently we have to manually create TypeScript types detailing request and response bodies. The issue with this approach is that it is very static, any changes will need to be copied across all of the services consuming the API, and the whole process is extremely time consuming.
-  \item Handling HTTP errors: Errors happen, and sometimes a request to a service will fail. The server might have hit an exception it couldn't recover from, or an underlying issue with the hosting may have temporarily knocked service out. Alongside this RESTful APIs often make use of techniques such as Rate Limiting in order to protect their services from DoS attacks. The API will allow X number of requests over a time-frame of Y. If the number of requests exceeds this number, then errors will be thrown on subsequent requests until the allotted time-frame is exceeded. 
+  \item Handling HTTP errors: Errors happen, and sometimes a request to a service will fail. The server might have hit an exception it couldn't recover from, or an underlying issue with the hosting may have temporarily knocked the service out. Alongside this RESTful APIs often make use of techniques such as Rate Limiting in order to protect their services from DoS attacks. The API will allow X number of requests over a time-frame of Y. If the number of requests exceeds this number, then errors will be thrown on subsequent requests until the allotted time-frame is exceeded. 
   These errors usually return specific HTTP status codes in the response, informing the client what went wrong with the request. Having mechanisms in place for automatically handling these errors, and trying to send the request again after an indeterminate amount of time will help to prevent avoidable errors from bubbling up the micro-service chain.
 \end{itemize}
 There are two mains areas that these issues fall under. One is code duplication, if three micro-services need to communicate with the same micro-service, then there will  be three separate client integration's for that service. Any changes made to the client will have to be duplicated across the different services and any bugs in the implementation will also be present across the board. 
 
 The other area is related to transferring information about the API, whether that be at the documentation level, or within the code when information is requested and then processed. Handling expected errors would also fall under this domain.
 
-Solving the problems can be broken down into several parts.
+The solution to the problem can be broken down into several parts.
  \begin{enumerate}
    \item Creating an exemplar micro-service with a well documented API that follows best practises and conventions. This will include implementation of things such as Rate Limiting and Pagination of results.
    \item Publishing documentation detailing the specification of the API.
-   \item Establishing a template for an API client that solves the issue related to consumption of APIs that we face.
+   \item Establishing a template for an API client that solves the issue related to consumption of APIs that we face. The client will have to handle errors and rate limiting correctly, as well as ensuring it exports the the shape of request responses as part of its library.
    \item Generating a library of API clients based on the template that the micro-services can import as dependencies. Essentially each micro-service will be able to produce an API client that a consumer can then use to communicate with it on demand.
  \end{enumerate}
+ 
+ If implemented properly, the solution will save time on development of new micro-services drastically. By being able to generate API clients for all of the services it needs to communicate with, less code will have to be manually written, and the code processing the outputs of the requests it makes can be written with confidence, as we will know exactly what data is returned. Additionally it will give us faith in the the handling of errors related to these requests, and if errors are thrown will help isolate exactly why and where they came from. 
+ 
+\section{Types of Software Architectures}
+I will be discussing two main forms of software architecture, the traditional Monolithic architecture, and the more contemporary, distributed micro-service architecture .
+\subsection{Monolithic Architecture}
+Monolithic architecture is the classic way of shipping software. All of the code is stored under one umbrella. Back-end, database and front-end code are all encapsulated as a single unit. The different software components can readily talk to one-another, no API usage between the internal components is needed. 
+\subsection{Micro-service Architecture}
+Conversely, micro-service architectures break down this monolithic structure into a number of self contained and loosely coupled services, responsible for a single aspect of the applications functionality. These services then communicate with each other, typically through an API, in order to pass information from one part of the system to another.
+\subsection{Monolith vs Micro-services}
+The two architecture styles each offer advantages and disadvantages when compared with each other. 
+Monolithic code-bases are simple to develop, test, and deploy. You only need to have one code-base stored locally, and you simply need to checkout onto a new branch and start coding to add new functionality. As everything is under one roof, you can have powerful testing suites that cover the entire application, both at a Unit level, but also as End-to-End tests. End-to-End tests are particularly potent as they allow the system to start tests at the UI simulating the end user, ensuring behaviour of the application is expected from start to finish.
 
+However, monoliths can get messy. As functionality of the application grows, so does the code-base, and soon the system can consist of many hundreds and thousands of different classes and files. If the entire system isn't extensively Unit-Tested, small changes can easily introduce new bugs, and adding additional functionality can turn into an agile development nightmare. Monoliths can also make fully understanding the code-base as a whole extremely challenging, simply because there is too much code there. A new developer joining the team could be easily overwhelmed as they learn the system. 
 
-\section{Micro-service vs Monolithic Software Architectures}
-\section{API Architectures}
-\section{API Specifications}
+Micro-services alleviate a lot of these issues. As individual functionality is abstracted out as a new service, understanding how individual micro-services work is comparatively very easy. Micro-services also enable different teams to easily and effectively work on different components of the system in parallel. As long as correct versioning techniques are used, and the application has been logically broken down, then modification of one part of the system should have little to no effect on other parts. Comparatively, while monoliths are technically easy to deploy, any changes made to the monolith result in the entire stack being re-deployed, and in large applications this can make throughput of small agile changes very low. Something as simple as changing some text in the front-end can take many hours to go through the deployment pipeline. Micro-services do have the disadvantage of being more difficult to deploy, the distributed nature of the system means that proper networking and fallback protocols need to be implemented to make sure that the system can happily work together as a cohesive unit.
+
+Additionally, software following the micro-service architecture can consist of micro-services using completely different programming languages and technologies. Through their usage of APIs to communicate between services, each micro-service doesn't need to have any knowledge of the internal workings of any of the the other services in order to properly function. This means that a company can use individual services as test beds for new technology and solutions, and look to incorporate those over time as new micro-services get added. This is something that the static nature of a monolithic architecture prevents, as everything is so tightly would together.
+
+Micro-services are heavily scalable, and if certain parts of the overall system need more resources or implementations of things such as load balancers, then those specific micro-services can be targeted. In monoliths, resources need to be added to the entire system as a whole. Failures within micro-service architectures are oftentimes handled more gracefully. If an error or a failure happens in one service, then it is isolated, especially in the cases of more technical issues such as memory leaks. However networking problems and errors can cause issues with micro-services, primarily by interrupting communication between them. If a services communication channels are knocked out, then that entire functionality is knocked out until the issue is resolved.
+
+Overall, there are use cases for both architectural styles. Monoliths work very well for smaller code-bases, but as soon as the application grows and becomes cumbersome, more scalable micro-services are typically a better bet.
+\section{RESTful API Architecture}
+REST is an acronym for Representation State Transfer. REST follows the client-server architectural paradigm and is stateless, the client and server do not need to know about the others state. This paradigm allows different clients, all implemented differently, to interact with the same server, in the same way, and receive the same responses. Changes made to the clients have no bearing on the server whatsoever.
+
+Information in a RESTful API is abstracted out as a Resource. State is the information stored under the resource. When a client makes a request to the server, the format of the response, I.e. the Representation of the data, is specified and the data is returned in that format. Essentially RESTful APIs work by getting the client to describe exactly what they want, and how they want to receive it.
+\subsection{REST Requests}
+Requests made to a RESTful API contain a number of components
+\begin{enumerate}
+\item{HTTP Verb: The HTTP verb defines the operation that will take place. There are four main HTTP verbs that see common use. Technically there are more but for general use cases they aren't commonly used.}
+\begin{itemize}
+    \item GET: This verb specifies that you wish to retrieve the information about the desired resource
+    \item POST: This verb informs the server that it is to create a new resource. Typically the information relating to the new resource is sent in the request body.
+    \item PUT: The PUT verb is used to modify a specified resource. As with POST the detail of the modification are typically sent in the request body.
+    \item DELETE: This verb is pretty self explanatory, and informs the server that the resource should be deleted
+\end{itemize}
+\item{URL Endpoint: URL is an acronym for Uniform Resource Locator, and specifies the resource being requested, and where to request it from.
+
+An example URL endpoint for the Bitbucket API is: 
+\begin{verbatim}
+  GET https://api.bitbucket.org/2.0/repositories?role=member
+\end{verbatim}
+This URL requests a list of all public repositories in which the authorised user has read-access. It consists of a number of different components.
+\begin{itemize}
+    \item Scheme: The scheme is used to identify how the URL is to be interpreted.In the example the scheme 
+    \begin{verbatim}  https\end{verbatim}
+    This tells the client that HTTP over TLS is to be used.
+    \item Host: This specifies the base address for where the request will be sent. In the example this will be 
+    \begin{verbatim}  api.bitbucket.org\end{verbatim}
+    The request will be made under Bitbucket's API domain. 
+    \item Path: This specified the resources being requested. In the example it is 
+    \begin{verbatim}  /repositories\end{verbatim}
+    In this case the resource being requested is all of the public repositories.
+    \item Query: The query parameters are normally optional on requests, and are usually used to help further filter and define requests. Query parameters are added after a ? and multiple query parameters can be added after each other through the \& symbol.
+    In the example URL the query parameter is 
+    \begin{verbatim}  role=member\end{verbatim}
+    This requests results be filtered down to only those where the authenticated user has read-only rights on the repository.
+\end{itemize}
+}
+\item{Header: The header is used to pass additional information about the request and response. Both requests and responses have their own headers and different headers provide different information. Typical use cases for request headers are to allow the client provide credentials to authorise restricted requests. The client may provide a token which the server can then check and authenticate. If the client is authorised the response is sent, otherwise the server will send an Unauthorised error response. An example of a response header is the Location field, often used to specify the  location of newly POSTed resources within the response. }
+\item{Body: Request bodies are typically only needed for POST and PUT requests, and is used to pass in additional information used to create or update the resource. Body data can be sent in different forms, often identified within the header.}
+\end{enumerate}
+
+One important note about REST is that it is not a formal protocol, and is instead a set of more loose guidelines. 
+\section{Alternatives to REST APIs}
+\subsection{SOAP APIs}
+Simple Objects Access Protocol is an XML based messaging protocol. Compared to REST it is far more verbose and rigid. SOAP is typically used by financial institutions, it's rigid nature is ideal for usecases where security is  a priority. For general usage SOAP requests and responses contain vast swathes of bloat, which in turn slows down communication. With SOAP you are also locked into using XML, which compared to more contemporary approaches like JSON, is less user-friendly and far less human-readable.
+
+All of this reduces the viability of SOAP for use in micro-service APIs, the overhead is just too great compared to RESTful APIs.
+
+\subsection{GraphQL APIs}
+GraphQL is a contemporary data query language developed by Facebook. With GraphQL a single endpoint is provided, and clients request the specific information that they required. Whereas REST endpoints provide concrete response bodies for request, GraphQL returns only the information requested. This makes GraphQL a lot more lightweight than RESTful APIs, no redundant information is requested or sent.
+
+The downside with GraphQL is it has set to see widespread standardisation or adoptions. Far more tools and solutions support REST, however over the next few years we might see a shift away from REST and towards GraphQL. 
+
+\section{RESTful API Documentation, Specification \& Definition}
+\subsection{Documentation}
+API documentation guides the end-user on how the API is to be used. It tells a developer how each endpoint interacts, from how the client should format a request, as well as describing the responses provided by the server.
+
+Good API documentation should cover the following:
+\begin{itemize}
+    \item Details for each API endpoint: Each API endpoint should be described in detail. Related HTTP verbs should be listed, path parameters should be described and the functionality that the endpoint fulfils should be described. Additionally all query parameters should be listed and explained, with details on the effect they have on the call. Any additional information about header parameters that the user should be aware of should also be listed.
+    \item Detailed request information: For PUT and POST requests detailed information relating to the data the API server expects to be sent should be provided. Information about all fields in the body data should be explained, as well as data formats accepted by the endpoint. Good documentation will provide examples for each of the data formats.
+    \item Detailed response information: The response format for the endpoint should be described in depth, each field explained and listed. Example responses help users of the API understand more clearly. 
+    \item Detailed lists of error information: If an API expects to throw errors in certain cases, but details of these errors are not provided, then the user is not able to handle them. All expected error messages should be listed, with details of the message, associated HTTP status code and an explanation of the cause. 
+\end{itemize}
+Documentation should always be kept up to date, and updated as the API itself is modified. If an API isn't documented, or the documentation is out of date, then the API is unusable.
+
+\subsection{Specification}
+Where documentation is meant to be a human-readable explanation of an API, API specifications describe how the API behaves and interacts, and is typically written in specific specification languages. 
+\subsubsection{OpenAPI Specification}
+\subsection{Definition}
+
 \section{REST API Best Practises}
 \section{REST API Clients Best Practises}
-\section{Creating a RESTful API in Node.js with TypeScript}
-\section{Creating a RESTful API client in Node.js with TypeScript}
 \section{Code Generation}
 \section{Generating code from an OpenAPI specification}
