@@ -1,4 +1,30 @@
 \chapter{Literature Review}
+\section{Introduction}
+In this chapter I shall give a more in-depth overview of the problem. I will then look at the different areas relating to the project, including analysis of different software and API architectures, best practises for both API and API client designs, as well as how to create this software in Node.js. Additionally I shall look at current code generation tools, specifically relating to API Client and Server generation.
+
+\section{The Problem: Communication between micro-services}
+
+During our transition from a monolithic architecture to micro-services we have encountered the following issues:
+\begin{itemize}
+  \item Lack of documentation for APIs: Documenting APIs is crucial, consumers need to know how to make requests, and what responses look like. Ensuring the documentation is up to date and accurate is mandatory in order for an API to be used effectively. Documentation also allows users to study how the API works without having to integrate its usage into their software. 
+  \item Duplication of code handling communication between micro-services: Every micro-services will have code responsible for communicating with all of the other micro-services it needs to send requests to. If the API is modified or new endpoints are added, each service consuming the API is going to need to also have the modifications applied. Good API documentation will provide example response and request payloads as well as detailed information about expected error responses. Without this information any integration's will likely run into issues, whether it be processing data retrieved form the API or when errors that the server expects to be returned are not handled correctly. 
+  \item The client service lacks knowledge about the shape of the response when a request is made: In a monolithic architecture, all the code is encapsulated under the same umbrella, and so if one part of the system communicates with another part, all of the class information will be provided. This is even more of an issue with external APIs. If we make a request to GitHub, the service making the request needs to know the format and structure of the response so that we can consume the information provided as we need to. Currently we have to manually create TypeScript types detailing request and response bodies. The issue with this approach is that it is very static, any changes will need to be copied across all of the services consuming the API, and the whole process is extremely time consuming.
+  \item Handling HTTP errors: Errors happen, and sometimes a request to a service will fail. The server might have hit an exception it couldn't recover from, or an underlying issue with the hosting may have temporarily knocked service out. Alongside this RESTful APIs often make use of techniques such as Rate Limiting in order to protect their services from DoS attacks. The API will allow X number of requests over a time-frame of Y. If the number of requests exceeds this number, then errors will be thrown on subsequent requests until the allotted time-frame is exceeded. 
+  These errors usually return specific HTTP status codes in the response, informing the client what went wrong with the request. Having mechanisms in place for automatically handling these errors, and trying to send the request again after an indeterminate amount of time will help to prevent avoidable errors from bubbling up the micro-service chain.
+\end{itemize}
+There are two mains areas that these issues fall under. One is code duplication, if three micro-services need to communicate with the same micro-service, then there will  be three separate client integration's for that service. Any changes made to the client will have to be duplicated across the different services and any bugs in the implementation will also be present across the board. 
+
+The other area is related to transferring information about the API, whether that be at the documentation level, or within the code when information is requested and then processed. Handling expected errors would also fall under this domain.
+
+Solving the problems can be broken down into several parts.
+ \begin{enumerate}
+   \item Creating an exemplar micro-service with a well documented API that follows best practises and conventions. This will include implementation of things such as Rate Limiting and Pagination of results.
+   \item Publishing documentation detailing the specification of the API.
+   \item Establishing a template for an API client that solves the issue related to consumption of APIs that we face.
+   \item Generating a library of API clients based on the template that the micro-services can import as dependencies. Essentially each micro-service will be able to produce an API client that a consumer can then use to communicate with it on demand.
+ \end{enumerate}
+
+
 \section{Micro-service vs Monolithic Software Architectures}
 \section{API Architectures}
 \section{API Specifications}
