@@ -4,9 +4,51 @@
 In this section I will explore the actual requirements that the project aims to meet. The functionality of the end products will be specified creating tangible goals that can be tested against.
 \section{Requirement Gathering}
 No formal requirements gathering will take place, instead requirements will be pulled out of my last three years creating and working with the micro-services and their APIs at Hindsight Software. Essentially I will draw on my employment as a case study, and look to solve the issues we have encountered during our work.
+
+\subsection{The Overall Goals of the Project}
+
+\subsubsection{Speeding up the development of RESTful Node.js micro-services with the OpenAPI Specification}
+During development of an application, the bulk of development time should be spent building and testing the logic for the end behaviour of the program, not on the configuration and frameworks used. Choosing the right tools and libraries to allow development of new micro-services to be as fast and fluid as possible is crucial to the longevity and extensibility of the application.
+
+The first part of the project will involve building a RESTful micro-service using a collection of tools aiming to fulfil these criteria that we can use as a template for future micro-services at Hindsight. Additionally, facilities for features such as API parameter and payload validation, rate limiting of endpoints and support for documentation must be included. There must also be functionality supporting exporting an OpenAPI Specification representing the micro-services API. This specification will be used to generate API clients using the OpenAPI Generator tool later.
+
+The micro-service designed will be simple, fundamentally acting simply as a test-bed and exemplar project for the libraries used, but will include all standard functionality expected for a modern application, including use of a database system.
+
+\subsubsection{Creating a reliable template TypeScript API client with built in handling of common errors and API response/request types }
+Once the API for the micro-service has been created, I will look at creating a custom API client consuming it. The aim of this client here is to produce a client library for the micro-service API that any number of other services can install and use to communicate with the target micro-service.
+
+The client library will need to facilitate automatic retry mechanisms on certain failed requests, support the use of query parameters for filtering and sorting of results as well as exposing the details of request and response bodies as TypeScript types to the library user.
+
+
+\subsubsection{Injecting the new API client functionality into auto-generated API clients from the OpenAPI Generator}
+
+\subsection{Summary}
+Summary of combined goals - Set of tools creating a pseudo framework...
+
 \section{System Requirements}
+Breaking down the problem and extracting out for each section...
 \subsection{Node.js micro-service}
+
+What should the micro-service have/do
+- well documented API - talk about /docs endpoint
+- strongly typed throughout - tie into response/request bodies
+- rate limited
+- pagination
+- request/response validation
+- well formed URLs
+
 \subsection{The ideal API Client Library}
+
+What functionality should the Client do
+- expose API responses as part of the function return types
+- add retry attempts on certain HTTP error codes
+- support query parameters on requests within method bodies 
+
 \subsection{Analysis of OpenAPI Generator and Modifications Required}
+
+Not entirely sure how to format this one. The requirements themselves are more fluid, e.g. once i've created the baseline client, then comparing that against the auto-generated code and working out what's missing etc. I can add them now that i've identified the stuff that needs adding, but don't know if that messes with flow of the report? 
+
 \section{Software Development Life-cycle Methodology}
 \subsection{Agile and Kanban}
+
+\section{Conclusion}

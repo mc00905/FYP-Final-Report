@@ -1,7 +1,19 @@
 \chapter{System Design}
 \section{Introduction}
 In this section of the report I will explain and justify the design decisions I have made relating to both the architecture of my systems, and the libraries they employ.
+
+How is everything broken down. Rough outline for each of the sections and why I have made the decisions to do it this way
+
+API -> API Client Diagram
+
+How is everything gonna gel together at the end
+
+Big picture - blue sky aim 
+
 \section{Technologies and Libraries}
+
+What are they, why them, brief discussion about competitors etc, how do they fit in/what are they doing for me specifically
+
     \subsection{Node.js}
     \subsection{TypeScript}
     \subsection{OpenAPI Specification}
@@ -11,12 +23,46 @@ In this section of the report I will explain and justify the design decisions I 
     \subsection{Express-Rate-Limit}
     \subsection{Mongoose}
     \subsection{Axios}
-    \subsection{Axios-Rety}
+    \subsection{Axios-Retry}
     \subsection{Jest}
     \subsection{Nock}
     \subsection{OpenAPI Code Generator}
+    
 \section{System Architecture}
 \subsection{Microservice}
+Micro-service layer diagrams -> flow chart showing data flow - explaination of each layer
+
+Discussion/diagrams of interweaving of micro-service libraries/modules?
+
+Discussion on code implementations -> typical jargon and talk about decisions made on fly, any tweaks/issues
+
+Focus on TSOA and the TSOA Spec command for generating an OpenAPI spec file from the controllers -> potentially for CI pipelines and long term goal of using the spec as a client gen -> publish as module for import elsewhere
+
+The /documentation endpoint for providing living documentation from the same spec file
+
 \subsection{API Client}
+As above
+
+Additional information about designing it as an NPM module, dependency that can be consumed 
+
+Can I talk about it being published without actually having to publish the package? No big deal if so, just avoids some hassle.
+
 \subsection{Modifying the OpenAPI Code Generator}
+
+What does it do - what needs changing? Kinda cheating but there's 5/6 potential choices for TypeScript frameworks for the generated code to use, there's an Axios option available so ties in pretty perfectly with my handcrafted-client, I guess it's worth evaluating some of the other options though? For example the TypeScript-Node option uses the hugely popular but now deprecated Request library so can talk about longetivity of the generated code from that regard?
+
+What functionality is missing from the auto-gen that my client has
+
+Venn diagram a good way of showing this? Any other visual options you can think of?
+
+How am I gonna implement it (for the most part will essentially copy and paste into the template files) -> talk about best way to add it to mustache template files - although for the most part the additions will be static imports/code additions, no need for pulling templating fields out
+
+
+
 \section{API Design}
+Why are the API endpoints the way they are
+- nouns
+- plurals
+- talk about ensuring usage of a case for each HTTP verb is used GET,PUT,POST,DELETE
+- JSON format -> standard and friendly
+- Rate limiting and pagination on Array results
