@@ -19,36 +19,51 @@ Once the API for the micro-service has been created, I will look at creating a c
 
 The client library will need to facilitate automatic retry mechanisms on certain failed requests, support the use of query parameters for filtering and sorting of results as well as exposing the details of request and response bodies as TypeScript types to the library user.
 
+The library must also be easily imported into other Node.js micro-services so that the other services can readily consume the API exposed by the client.
 
 \subsubsection{Injecting the new API client functionality into auto-generated API clients from the OpenAPI Generator}
 
+The final aim goal of the project is to automatically generate client libraries fulfilling the above criteria using the OpenAPI Generator. The tool provides options for a number of different styles of clients, each utilising different technology stacks and frameworks, and so the first job will be determining which of the offerings is the best fit. From there I will compare the functionality against the selected option and my custom client, and then look at adding any missing pieces into the template files used during generation.
+
 \subsection{Summary}
-Summary of combined goals - Set of tools creating a pseudo framework...
+The overarching goal of the project as a whole is to create a suite of tools that speeds up and make development of a collection of RESTful micro-services easier. Generating clients automatically from API specifications allows all of the inter-micro-service communication to be modularised, allowing micro-services to import the client library for each service that they wish to communicate with. As the APIs of a micro-service is updated and a new endpoint is added, a new API specification will be created in turn creating a new version of the client library through the code generation tool. The library will then be published allowing all services using it as a dependency to have access to the endpoint as soon as it goes live.
 
 \section{System Requirements}
-Breaking down the problem and extracting out for each section...
-\subsection{Node.js micro-service}
+\subsection{Node.js micro-service \& its API}
+\begin{enumerate}
+    \item \textbf{Use well-formed URLs}: The URLs used for the API should follow best practises. Nouns should be used within the URL paths and plurals should be used for all resources. 
+    \item \textbf{Provide endpoints for each of the major HTTP verbs}: At least one endpoint using GET, POST, PUT and DELETE should be created. GET endpoints for fetching data, POST for creating new resources, PUT for updating a resource, and DELETE for deleting a resource. 
+    \item \textbf{Assign the correct HTTP status codes to both Success and Error Responses}: 2xx series codes should be used for successful operations, 4xx operations should be used for any client related errors and 5xx status codes should be used for any errors relating to the server itself.
+    \item \textbf{Validate both request and response payloads}: The data being passed in and out of the API should be properly defined and validated. All request bodies, query parameters and path parameters should be validated and checked against the specification and any failures in the validation should throw a HTTP error with status code 400.
+    \item \textbf{Provide useful documentation for the API}: There must be a mechanism in place for viewing documentation related to the API that is easy to update as the API is updated. It should provide details about endpoints, parameters and request and response bodies. 
+    \item \textbf{Utilise Rate Limiting}: The API should make use of Rate Limiting to protect itself against Denial of Service attacks.
+    \item \textbf{Make use of Pagination on large responses}: Large array based responses should be broken down and paginated to reduce the size of response payloads when related requests are made. The response should detail content of the current page, number of the current page and information of total number of pages related to the request. The API should facilitate accessing different pages.
+    \item \textbf{Provide access to a database to support CRUD usage of different HTTP Verbs}:  The micro-service should connect to a database allowing actual data to be created, fetched, modified and deleted.
+\end{enumerate}
 
-What should the micro-service have/do
-- well documented API - talk about /docs endpoint
-- strongly typed throughout - tie into response/request bodies
-- rate limited
-- pagination
-- request/response validation
-- well formed URLs
-
-\subsection{The ideal API Client Library}
-
-What functionality should the Client do
-- expose API responses as part of the function return types
-- add retry attempts on certain HTTP error codes
-- support query parameters on requests within method bodies 
+\subsection{The ideal TypeScript API Client Library}
+\begin{enumerate}
+    \item \textbf{Support all endpoints across the API}: All of the endpoints available within the API should be accessible from the client library.
+    \item \textbf{Provide details of the responses types returned by endpoints}: The response bodies of each endpoints should be exposed as TypeScript types to allow consumer code to easily interact with the data provided.
+    \item \textbf{Provide details of all input parameters for the endpoints}: All path parameters, query parameters and body fields should be available to input for each endpoint.
+    \item \textbf{Ensure all important error information is correctly is passed on}: Any errors produced by the API should be properly passed onto the client consumer, including HTTP status code and any other important error details.
+    \item \textbf{Automatically retry requests that fail with certain HTTP status codes}: Errors relating to rate-limiting or server errors should be retried a finite number of times, after a non-determinate amount of time has passed to try to avoid the end-user having to make another request in the future.
+\end{enumerate}
 
 \subsection{Analysis of OpenAPI Generator and Modifications Required}
-
-Not entirely sure how to format this one. The requirements themselves are more fluid, e.g. once i've created the baseline client, then comparing that against the auto-generated code and working out what's missing etc. I can add them now that i've identified the stuff that needs adding, but don't know if that messes with flow of the report? 
+\begin{enumerate}
+    \item \textbf{Generate an API client from scratch through use of an OpenAPI specification}: Given an OpenAPI Specification it must be possible to create a fully functional API client library using the OpenAPI Generator tool with my custom changes.
+    \item \textbf{Support all endpoints across the API}: All of the endpoints available within the API should be accessible from the client library.
+    \item \textbf{Provide details of the responses types returned by endpoints}: The response bodies of each endpoints should be exposed as TypeScript types to allow consumer code to easily interact with the data provided.
+    \item \textbf{Provide details of all input parameters for the endpoints}: All path parameters, query parameters and body fields should be available to input for each endpoint.
+    \item \textbf{Ensure all important error information is correctly is passed on}: Any errors produced by the API should be properly passed onto the client consumer, including HTTP status code and any other important error details.
+    \item \textbf{Automatically retry requests that fail with certain HTTP status codes}: Errors relating to rate-limiting or server errors should be retried a finite number of times, after a non-determinate amount of time has passed to try to avoid the end-user having to make another request in the future.
+\end{enumerate}
 
 \section{Software Development Life-cycle Methodology}
 \subsection{Agile and Kanban}
 
+TODO:
+
 \section{Conclusion}
+In this chapter I have looked at the overall goals that my project aims to fulfils, as well as the individual requirements for each of the software components and I have detailed my plans to use the Kanban Agile Framework during development of the various solutions.
