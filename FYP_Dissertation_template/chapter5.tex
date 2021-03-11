@@ -2,31 +2,123 @@
 \section{Introduction}
 In this section of the report I will explain and justify the design decisions I have made relating to both the architecture of my systems, and the libraries they employ.
 
-How is everything broken down. Rough outline for each of the sections and why I have made the decisions to do it this way
+The project is going to consist of three differing systems. The first will be a Node.js TypeScript RESTful micro-service. It will be a pretty basic service, fulfilling the basic functionality expected of a modern micro-service. The second will be a TypeScript NPM module, acting as a client library that consumes the API of the micro-service and allows the Node.js service that imports the module to access the API. The final part of the project is a number of modifications made to the OpenAPI Generator typescript-axios templates. These changes will add any missing functionality to the generated client, using my NPM module as a baseline.
 
-API -> API Client Diagram
+\subsection{Client-Server API Interactions}
 
-How is everything gonna gel together at the end
+The foundation of the project is in the interactions between micro-services. Each individual micro-service will utilise a RESTful API to expose its functionality to other services within the application through the use of HTTP requests. This follows the typical Client-Server model, where the service making the request acts as the client, and the owner of the API being requested acts as the server. Any number of micro-services can make requests to any of the APIs within the overarching application and so the system design needs to facilitate this in a scalable way.
 
-Big picture - blue sky aim 
+INSERT API - API CLIENT DIAGRAM HERE
+
+The end goal of the project is to provide the ability for all micro-services in a distributed application to produce an API client for their APIs that the other services can use without any client related code needing to be written. This will allow more development time to be put into the actual application logic of the system, reduce duplicated code across multiple services and provide a communication platform that is robust and reliable. 
+
+\section{Premise of the micro-service}
+The micro-service will be a fairly basic piece of software, aiming simply to provide the basic functionality required. As such the service will simulate a simple Stock Control component that could be used by a supermarket. It will be connected to a simple back-end database, and allow different products to be added, updated and deleted from the system. 
+
+\section{RESTful API Design}
+The first part of the system to be designed is the REST API for the exemplar micro-service. One of the key features of a micro-service architecture is that it allows the different services to be written in different frameworks and languages, and so the API must be language-agnostic. As such all request and response bodies will use JSON. This means that although the micro-service, based on the technology stack at Hindsight, will be a Node.js service written in TypeScript, theoretically any programming language that can handle JSON payloads will be supported.
+
+In line with REST API best practises, all endpoint resources will be named with nouns, and the plural form will be used. The noun used for the base API will be shoppingItems. A shoppingItem representing one item within the API and shoppingItems representing the collection as a whole. 
+As such, the base endpoint will be:
+\begin{verbatim}
+    /REST/1.0/shoppingItems
+\end{verbatim}
+
+Support will need to be provided for all CRUD operations for an API, supporting the HTTP verbs GET, POST, PUT and DELETE. Both a singular shoppingItem and the contents of the collection need to be fetched, and a subset of the properties of individual shoppingItems will need to be updated. New shoppingItems will need support for creation, and existing shoppingItems need to be able to be deleted.
+
+Individual shoppingItems will have the following properties:
+\begin{verbatim}
+    name: A string representing the unique name of the shoppingItem.
+    category: An enumerated type representing the type of shoppingItem.
+    numberOfStock: A representation of the number of the shoppingItem in stock
+    inStock: A boolean representing the state of numberOfStock > 0
+\end{verbatim}
+
+\subsection{API Endpoints}
+
+\it{All request and response bodies will be formatted as JSON.}
+
+\begin{verbatim}
+    GET /REST/1.0/shoppingItems
+    Query Parameters:
+        inStock: filter items matching the inStock state provided
+        category: filter items matching the category provided
+\end{verbatim}
+
+\begin{verbatim}
+    POST /REST/1.0/shoppingItems
+    Request Body:
+        {
+            name,
+            category,
+            numberOfStock
+        }
+\end{verbatim}
+
+\begin{verbatim}
+    GET /REST/1.0/shoppingItems/{name}
+    Path parameters:
+        name: The name of the item being queried
+\end{verbatim}
+
+\begin{verbatim}
+    DELETE /REST/1.0/shoppingItems/{name}
+    Path parameters:
+        name: The name of the item being queried
+\end{verbatim}
+
+\begin{verbatim}
+    PUT /REST/1.0/shoppingItems/{name}/increaseStock
+    Path parameters:
+        name: The name of the item being queried
+\end{verbatim}
+
+
+\begin{verbatim}
+    PUT /REST/1.0/shoppingItems/{name}/decreaseStock
+    Path parameters:
+        name: The name of the item being queried
+\end{verbatim}
+
+
+\begin{verbatim}
+    PUT /REST/1.0/shoppingItems/{name}/category
+    Path parameters:
+        name: The name of the item being queried
+\end{verbatim}
+
+Why are the API endpoints the way they are
+- nouns
+- plurals
+- talk about ensuring usage of a case for each HTTP verb is used GET,PUT,POST,DELETE
+- JSON format -> standard and friendly
+- Rate limiting and pagination on Array results
+
+
 
 \section{Technologies and Libraries}
 
 What are they, why them, brief discussion about competitors etc, how do they fit in/what are they doing for me specifically
+\subsection{Node.js}
+\subsection{TypeScript}
+\subsection{OpenAPI Specification}
 
-    \subsection{Node.js}
-    \subsection{TypeScript}
-    \subsection{OpenAPI Specification}
-    \subsection{TSOA}
-    \subsection{Express}
-    \subsection{Swagger-UI-Express}
-    \subsection{Express-Rate-Limit}
-    \subsection{Mongoose}
-    \subsection{Axios}
-    \subsection{Axios-Retry}
-    \subsection{Jest}
-    \subsection{Nock}
-    \subsection{OpenAPI Code Generator}
+\subsection{Micro-service specific libraries}
+\subsubsection{TSOA}
+\subsubsection{Express}
+\subsubsection{Swagger-UI-Express}
+\subsubsection{Express-Rate-Limit}
+\subsubsection{Mongoose}
+
+\subsection{Client specific libraries}
+\subsubsection{Axios}
+\subsubsection{Axios-Retry}
+
+\subsection{OpenAPI Code Generator}
+
+\subsection{Unit Testing related libraries}
+\subsubsection{Jest}
+\subsubsection{Nock}
     
 \section{System Architecture}
 \subsection{Microservice}
@@ -56,13 +148,3 @@ What functionality is missing from the auto-gen that my client has
 Venn diagram a good way of showing this? Any other visual options you can think of?
 
 How am I gonna implement it (for the most part will essentially copy and paste into the template files) -> talk about best way to add it to mustache template files - although for the most part the additions will be static imports/code additions, no need for pulling templating fields out
-
-
-
-\section{API Design}
-Why are the API endpoints the way they are
-- nouns
-- plurals
-- talk about ensuring usage of a case for each HTTP verb is used GET,PUT,POST,DELETE
-- JSON format -> standard and friendly
-- Rate limiting and pagination on Array results
