@@ -26,7 +26,7 @@ As such, the base endpoint will be:
 
 Support will need to be provided for all CRUD operations for an API, supporting the HTTP verbs GET, POST, PUT and DELETE. Both a singular shoppingItem and the contents of the collection need to be fetched, and a subset of the properties of individual shoppingItems will need to be updated. New shoppingItems will need support for creation, and existing shoppingItems need to be able to be deleted.
 
-Individual shoppingItems will have the following properties:
+\emph{Individual shoppingItems will have the following properties:}
 \begin{verbatim}
     name: A string representing the unique name of the shoppingItem.
     category: An enumerated type representing the type of shoppingItem.
@@ -35,113 +35,358 @@ Individual shoppingItems will have the following properties:
 \end{verbatim}
 
 \subsection{API Endpoints}
+Descriptions of the planned API endpoints can be found below: 
 
-\it{All request and response bodies will be formatted as JSON.}
+\emph{All request and response bodies will be formatted as JSON.}
+
+TODO: add response bodies
 
 \begin{verbatim}
     GET /REST/1.0/shoppingItems
+    Description:
+        Retrieve all shoppingItems
     Query Parameters:
+        page: page number of results returned by the query
+        pageSize: the number of results per page
         inStock: filter items matching the inStock state provided
         category: filter items matching the category provided
+    Additional note:
+        Endpoint will be paginated, pages accessed using the page query 
+        parameter + the nextPage field within the response body
 \end{verbatim}
+
 
 \begin{verbatim}
     POST /REST/1.0/shoppingItems
+    Description:
+        Create a new shoppingItem
     Request Body:
         {
-            name,
-            category,
-            numberOfStock
+            name: Name of the new shoppingItem,
+            category: Category of the new shoppingItem,
+            numberOfStock: Number of stock for the new shoppingItem,
         }
 \end{verbatim}
 
+
 \begin{verbatim}
     GET /REST/1.0/shoppingItems/{name}
+    Description:
+        Get an individual shoppingItem by name
     Path parameters:
         name: The name of the item being queried
 \end{verbatim}
 
 \begin{verbatim}
     DELETE /REST/1.0/shoppingItems/{name}
+    Description:
+        Delete an individual shoppingItem by name
     Path parameters:
         name: The name of the item being queried
 \end{verbatim}
 
 \begin{verbatim}
     PUT /REST/1.0/shoppingItems/{name}/increaseStock
+    Description:
+        Increase the named shoppingItem stock by value provided in body
     Path parameters:
         name: The name of the item being queried
+    Request Body:
+        {
+            value: number to increment by
+        }
 \end{verbatim}
 
 
 \begin{verbatim}
     PUT /REST/1.0/shoppingItems/{name}/decreaseStock
+    Description:
+        Decrease the named shoppingItem stock by value provided in body
     Path parameters:
         name: The name of the item being queried
+    Request Body:
+        {
+            value: number to decrement by
+        }
 \end{verbatim}
 
 
 \begin{verbatim}
     PUT /REST/1.0/shoppingItems/{name}/category
+    Description:
+        Update the named shoppingItem category
     Path parameters:
         name: The name of the item being queried
+    Request Body:
+        {
+            category: new category value
+        }
 \end{verbatim}
 
-Why are the API endpoints the way they are
-- nouns
-- plurals
-- talk about ensuring usage of a case for each HTTP verb is used GET,PUT,POST,DELETE
-- JSON format -> standard and friendly
-- Rate limiting and pagination on Array results
+
 
 
 
 \section{Technologies and Libraries}
 
-What are they, why them, brief discussion about competitors etc, how do they fit in/what are they doing for me specifically
-\subsection{Node.js}
-\subsection{TypeScript}
-\subsection{OpenAPI Specification}
+The next stage of the design process is going to be determining any libraries and frameworks that I am going to use in the software. There is no point in redesigning the wheel, and well established libraries provide robust and well-tested solutions to common problems.
 
+\subsection{Node.js}
+The micro-service will be implemented using the Node.js run-time environment. This allows me to model the micro-service after the micro-services used at Hindsight and has the added benefit of providing me with familiarity, meaning I don't have to learn anything new. Node.js is used industry wide for back-end APIs due to its asynchronous and non-blocking event handling and is also relatively lightweight whilst maintaining good performance. Through the use of NPM, a package manager for Node.js, hundred of thousands of public libraries and modules can be imported and utilised, providing access to well-tested and reliable code. This allows Node.js developers to avoid writing common code, as well as providing them to modularise their code into both public and private packages that can be shared across code bases. During the development of both the micro-service and the client I will be importing a number of public NPM packages into my code.
+
+\subsection{TypeScript}
+Node.js services are traditionally written in vanilla JavaScript, but through the use of NPM support can also be added for TypeScript.
+
+TypeScript at its core is just a superset of JavaScript, aiming to alleviate some of the foundational issues with language by adding features such strong type and generics support to JavaScript. Upon compilation, TypeScript is compiled back into vanilla JavaScript and so can typically be used anywhere JavaScript is used.
+
+Having used both JavaScript and TypeScript during development of micro-services, I could never go back to JavaScript. Personally I find the support added by TypeScript allows me to develop software far, far faster. The addition of types allows methods to define exactly what they return, and when tied in with a good IDE, the code prediction facilities provided by TypeScript allow a far more agile way of working. TypeScript code is also naturally documented by its types, parameters types are explicitly specified allowing some issues to show up as errors in the IDE before any code is even run through type checking.
+
+Because TypeScript is a superset of JavaScript, if for some reason some component does need to be written in raw JavaScript, that is also accepted by the compiler.
+\subsection{OpenAPI Specification}
+The OpenAPI specification is a language-agnostic RESTful API specification that is widely used across the industry. In my opinion it is the most user-friendly specification out there and provides a huge ecosystem of different tools and integrations. It will be the API specification I will be using for this project. 
+
+The specification document can be written in JSON or YAML, and provides details about all aspects of the REST API. When tied into language-specific tools the API specification can be used to generate both API clients and servers.
 \subsection{Micro-service specific libraries}
+
+In this section I will describe and justify the libraries and frameworks I have decided to use in development of the exemplar micro-service.
+
+\subsubsection{Express.js}
+Express.js is a framework I will be using as the base of my micro-service. The Node.js ecosystem contains a number of widely used frameworks, but Express.js is arguably the most popular. It is lightweight and extensible, and handles a lot of the more tedious aspects of setting up a Node.js application. Express allows middleware to be easily plugged in, allowing a developer to easily import and use libraries for handling a huge volume of different use cases. Common middleware includes cookie and session support as well as things like custom error handling.
+
+The Express framework is also the framework that most of the micro-services at Hindsight use, and so I am also very familiar with it.
 \subsubsection{TSOA}
-\subsubsection{Express}
+TSOA is an NPM library that that aims to treat the controller and data models of an application as the single source of an truth for the API. It defines routes for the endpoints and validates request payloads based on information provided the controllers and data models.The beauty of this approach is that as changes are made to either of these two parts of the system, the API is automatically updated to support the changes. TSOA allows tightly-woven typings across the application, all the way from the database layers up to the responses returned by the controllers.
+
+The library uses a number of decorators in conjunction with TypeScript in order to define how the generated API will function. The developer decorates the methods in the controllers with information about the endpoint URL, HTTP verbs to support and default response code that the endpoint will return. Parameters within the controller methods are then decorated to define URL path parameters, query parameters as well as the request body payload. TSOA automatically picks up the response for the endpoint from the return type of the method. 
+
+It generates routes for a number of different frameworks, including Express, and automatically validates incoming data against the API definitions. If the format of the data sent is not as expected, or the fields do not match, then it will reject the request and throw an error.
+
+TSOA can also generate an OpenAPI Specification for the API.Through usage of the JSDoc markup language, tonnes of additional information can be added to allow the generated specification to act more like living documentation for the API. Example requests and responses payloads can be included, as well as endpoint and parameter descriptions.
+
+The library does a lot of the heavy lifting for a micro-service, especially the tasks concerning routing and data validation, alongside handling the OpenAPI Specification requirement and so TSOA will be an integral part of the technology stack I use.
 \subsubsection{Swagger-UI-Express}
+Swaggger-UI-Express is another NPM package that generates Swagger-UI based API Documentation. It essentially takes an OpenAPI Specification in JSON format, and generate a HTML page representing the specification in an easily-readable format.
+
+It also allows requests to be made to the API directly from the web page, allowing the API to be utilised without any client related code. This allows easy testing of the API during development without having to manually type out convoluted CURL commands in order to make requests.
+
+When injected as middleware, the package can be used to create a documentation endpoint that automatically serves the Swagger-UI HTML page. By tying in both this package, and TSOAs specification generation, we can automatically publish API documentation. This means that as soon as code changes are published, a new API specification will be generated  and documentation for the modified API will follow instantly.
 \subsubsection{Express-Rate-Limit}
+This NPM package is a very simple rate limiting middleware. It is lightweight, but comes with the caveat that it recognises are requests as coming from  the same entity, and so all users will share the same rate limit timer. As this project is focussed on the interactions between an API client and server, this limitation is a non-issue, and this library provides the rate limiting proof of concept needed for the clients functionality to be testing against.
 \subsubsection{Mongoose}
+In order to properly support the CRUD requirements of the API, a simple and lightweight MongoDB database will be integrated into the micro-service.
+
+Mongoose is an NPM module that handles the vast majority of the logic involved in creating and interacting with a MongoDB database, cutting down on a huge volume of otherwise boilerplate code. It is schema-based, and so can also validate requests made to and from the database. It also provides support for injecting TypeScript types into its model definitions, allowing strongly typed response definitions to be returned from database queries. This allows the same type definitions to be used across all layers of the micro-service, and when used with TSOA decorators can provide API definitions using these typings. This means if the underlying database format and specifications are changed, then the API definition itself will be changed too.
+\subsubsection{Mongoose-Pagination-V2}
+The Mongoose-Pagination-V2 NPM package is a library that provides access to a Mongoose plugin. The plugin facilitates the use of a wrapper method on database queries that splits up the result of the query into paginated chunks.
+
+Pagination can be fairly easily obtained using vanilla Mongoose via the Skip and Limit operators. Skip simply tells the query to Skip x number of documents, whereas Limit gives an upper bound on the number of documents returned. Pagination can be simulated by setting the value of Skip to the Page Number of the request multiplied by the value of Limit. This will set the starting position of the query to the "Page Number" requested. However this approach does not easily expose the number of available pages to the consumer of the request and so makes iterating through the pagination less friendly. It is also not scalable for huge collections, and the use of Skip and Limit can become CPU and I/O bound for large sets of documents.
+
+SEE NOTE:
+FROM MONGOOSE DOCS 
+The cursor.skip() method is often expensive because it requires the server to walk from the beginning of the collection or index to get the offset or skip position before beginning to return result. As offset (e.g. pageNumber above) increases, cursor.skip() will become slower and more CPU intensive. With larger collections, cursor.skip() may become IO bound.
+REFERENCE THIS LATER
+
+The Mongoose-Pagination-V2 library instead is cursor-based and so does not have the same scalability concerns. It also provides all of the extra meta-data related to pagination and makes exposing exactly what data is being displayed to the user painless.
 
 \subsection{Client specific libraries}
+In this section I will look at  the tools and libraries I will within the API Client, as well as how I plan on publishing the client as a module. 
+\subsubsection{Creating the Client as an NPM Library}
+Seeing as the project is based on Node.js micro-services, configuring the Client library as an NPM library makes the most sense. The Client can easily be packaged and published to the NPM registry, either publicly or privately, and the micro-services can then readily install and utilise it. This also allows me to import other NPM packages as dependencies for my client, saving on the amount of otherwise unnecessary home-brewed code. Physically publishing the package is out of scope of this project, but the fundamental setup for the process will be done.
 \subsubsection{Axios}
+The key functionality of an API client is making requests to an API, and so choosing the right library for making HTTP requests is key.
+
+The library Request is a very popular and easy to use solution for making HTTP requests, and is what a lot of the Hindsight micro-services use to communicate between services. The library was however deprecated in early 2020, and so following developer best practises, an alternative should be used.
+
+Axios is a widely used alternative to Request. It provides a lot of powerful functionality like the ability to cancel requests, and automatically parses JSON data and encodes URL parameters. Requests can be heavily configured, providing options for things like transformation of request data into different formats, serialisation of parameters and the use of proxy servers.
+
+Axios is also promise based. Node.js is asynchronous, and promises are a mechanism for dealing with asynchronicity without having to resort to a large number of callbacks. This usage of promises allows Axios to provide the ability to intercept both requests and responses before they are passed back to the calling function. A key use case for this in my project will be facilitating automatic retries on certain failed requests. 
 \subsubsection{Axios-Retry}
+Axios-Retry is a simple NPM library that provides access to an Axios interceptor that allows failed requests to be caught and sent again. The interceptor can be configured to retry the request any amount of times, and can take in arguments for delays between retries as well as conditions for which status codes get retried. Although fundamentally a very small library, it saves me from writing code unnecessarily. 
 
 \subsection{OpenAPI Code Generator}
+The OpenAPI Generator provides a huge number of template configurations supporting different programming languages and frameworks. In this section I will explain why I chose the typescript-axios option.
+\subsubsection{The typescript-axios templates}
+The base of my handmade REST Client is the Axios HTTP library, and so utilising the typescript-axios configuration for the OpenAPI Generator should make pulling changes across the software fairly simple.
 
-\subsection{Unit Testing related libraries}
-\subsubsection{Jest}
-\subsubsection{Nock}
-    
-\section{System Architecture}
-\subsection{Microservice}
-Micro-service layer diagrams -> flow chart showing data flow - explaination of each layer
+The generated client is also setup as an NPM package, and so fulfils my concerns around easily importing and using the client in Node.js services. As a baseline, the generated code only has TypeScript and Axios as dependencies and therefore has no deprecated libraries in use. This should make it a fairly stable option longterm as Axios and TypeScript are both likely to stick around. 
+\section{Microservice}
+The micro-service will be broken down into a three layer architecture: the data layer, middleware layer and service layer.
+\subsection{The Data Layer}
+This layer will handle all of the business logic of the service, namely interacting with the database in order to fetch the information sent and requested through the API.
+\subsubsection{data-layer/models}
+The models directory will be where the Mongoose models and schemas for the service are defined. The schemas define the fields required for the documents within a collection, allowing validation by Mongoose automatically when the create and update wrappers are called. The model acts as interface for interacting with the schema, wrapping the CRUD operations boilerplate and packaging it into a simple object.  
+\begin{verbatim}
+    ShoppingItemModel.ts
+        This file will define the Mongoose schema for the ShoppingItem 
+        collection. It will define the shape of the data, and create the
+        actual collection in MongoDB. It will then create a Mongoose 
+        model that exposes all of the CRUD operations related to the 
+        collection. This will allow the data-agents to  interact with
+        the database without writing unnecessary boilerplate code. The
+        Mongoose-Paginate-V2 plugin will also be wired into the schema 
+        providing isolated access to the paginate functionality within
+        only this collection. If any further collections are to be added,
+        the pagination function will not be needed as default and so the
+        dependency is unnecessary.
+\end{verbatim}
+\subsubsection{data-layer/data-agents}
+The data-agents acts as a middleman between the controllers and the models. They take the data passed in from the controllers, do any processing or formatting required for the actual database queries. They then pass in the formatted data into the wrapper methods from the model with any configuration options relevant to the request. They then do any post-processing on the results that the controller might need before bubbling the result back up. The data-agents also handle and wrap any errors that might be thrown by the models and transform them into more helpful HTTP errors.
+\begin{verbatim}
+    ShoppingItemAgent.ts
+        The ShoppingItemAgent will be the data-agent responsible for 
+        calling and handling the ShoppingItemModel. It will contain 
+        a method related to each of the REST API endpoints, and 
+        using the data passed into it from the ShoppingItemController
+        will interact with the ShoppingItem collection. It will handle
+        any logic involved in both the pre and post-processing of data
+        and will map an errors thrown into one of the errors from the 
+        ErrorLibrary.
+        
+        createShoppingItem()
+            Method related to the creation of a ShoppingItem within the
+            database. Will call the findOneAndUpdate() model method. The use
+            of the ShoppingItem name as the unique identifier for the
+            collection means that namespace collisions need to be avoided
+            and so using the findOneAndUpdate function with the upsert flag
+            set will overwrite the previous document with the name if the same
+            name is used again.
+        
+        getShoppingItem()
+            Fetch an individual ShoppingItem from the collection based on a
+            name field passed in. Simple usage of the findOne() model method
+            using a query built around the name field. If no results are 
+            returned then a custom ShoppingItemNotFoundError is thrown with 
+            an assigned HTTP status code of 404.
+        
+        getShoppingItems()
+            Method for requesting multiple ShoppingItems, either the entire
+            collection, or a subset based on parameters for ShoppingItemCategory
+            or the inStock boolean.
+            Results will be paginated, and information related to current page
+            and total number of pages will be returned in the response.
+            Different pages can be accessed through usage of the Page parameter 
+            and the number of results per page can be changed through the 
+            PageSize parameter. If no results are found an empty array will be
+            returned. 
+        
+        updateShoppingItemCategory()
+            Simply update the ShoppingItemCategory of the document with the
+            queried name. Uses the findOneAndUpdate() model method and the
+            new, updated version of the document will be returned.
+        
+        increaseShoppingItemStock()
+            Increment the NumberOfStock field of the document with the name
+            passed in by the number in the value field. If the stock level is
+            raised from 0 then the boolean InStock will be flipped. Again the
+            method uses findOneAndUpdate() and returns the updated document.
+            
+        decreaseShoppingItemStock()
+            Decrement the NumberOfStock of the targeted document. Validation
+            catches negatives number and sets the NumberOfStock to 0 in these
+            cases. Model method used is findOneAndUpdate() with the modified 
+            form of the document being returned.
+        
+\end{verbatim}
+\subsection{The Middleware Layer}
+This will be where the logic used across the micro-service will be abstracted and stored, mainly TypeScript types and error definitions. This will also be where the literal middleware is configured such as the rate limiting configuration and error handler.
+\subsubsection{middleware/enums}
+Simple enumeration types library for the micro-service. Helpful for ensuring only certain field values can get through the TSOA validation and across the controllers and data-agents.
+\begin{verbatim}
+    ShoppingItemCategories.ts
+        A simple enumeration type detailing the valid ShoppingItem categories.
+\end{verbatim}
+\subsubsection{middleware/types}
+\begin{verbatim}
+    ErrorLibrary.ts
+        The ErrorLibrary takes the generic ErrorWrappers and contextualises the
+        errors by injecting a unique ErrorIdentifier value into the error. This
+        allows the error to be easily identified at a glance. We can simply look
+        at where the specific error in the library is thrown and investigate the
+        cause from there. Not so important in this small service, but in a large
+        distributed system, identifying the root cause of errors is extremely
+        important and so this added context is a necessity as errors will be 
+        bubbling up across multiple services potentially.
+\end{verbatim}
+\begin{verbatim}
+    ShoppingItem.ts
+        Simple TypeScript interface for defining the ShoppingItem type for
+        use across the service. Additionally usage of JSDoc annotation around
+        the fields allows TSOA to add descriptions of each property to the
+        OpenAPI Specification on generation.
+\end{verbatim}
+\subsubsection{middleware/}
+\begin{verbatim}
+    ErrorHandler.ts
+\end{verbatim}
+\begin{verbatim}
+    ErrorWrapper.ts
+\end{verbatim}
+\begin{verbatim}
+    RateLimiter.ts
+\end{verbatim}
+\subsection{The Service Layer}
+The Service layer will handle all of the logic associated with serving and processing the HTTP requests. This will be where all the controllers are defined and where the TSOA generated route files are created.
+\subsubsection{service-layer/controllers}
+\begin{verbatim}
+    ShoppingItemController.ts
+\end{verbatim}
+\subsubsection{service-layer/routes}
+\begin{verbatim}
+    Routes.ts
+\end{verbatim}
+\subsection{Other Files}
+Some files relating package and actual server configuration do not really belong in any of the layers and so are stored at the root level.
+\begin{verbatim}
+    App.ts
+\end{verbatim}
+\begin{verbatim}
+    Server.ts
+\end{verbatim}
+\begin{verbatim}
+    tsoa.json
+\end{verbatim}
+\subsection{Commands Used}
+\subsubsection{Generating an OpenAPI Specification from the Controllers}
 
-Discussion/diagrams of interweaving of micro-service libraries/modules?
 
-Discussion on code implementations -> typical jargon and talk about decisions made on fly, any tweaks/issues
+\subsection{Overall Service Diagram}
+INSERT DIAGRAM SHOWING HOW ALL THE FILES ETC COMMUNICATE I.E. CONTROLLER --> AGENT ETC, FLOW CHART TOO MAYBE? ERROR/SUCCESS FLOW..
 
-Focus on TSOA and the TSOA Spec command for generating an OpenAPI spec file from the controllers -> potentially for CI pipelines and long term goal of using the spec as a client gen -> publish as module for import elsewhere
-
-The /documentation endpoint for providing living documentation from the same spec file
-
-\subsection{API Client}
+\section{API Client}
 As above
 
 Additional information about designing it as an NPM module, dependency that can be consumed 
 
 Can I talk about it being published without actually having to publish the package? No big deal if so, just avoids some hassle.
 
-\subsection{Modifying the OpenAPI Code Generator}
+\subsubsection{Publishing the library}
 
-What does it do - what needs changing? Kinda cheating but there's 5/6 potential choices for TypeScript frameworks for the generated code to use, there's an Axios option available so ties in pretty perfectly with my handcrafted-client, I guess it's worth evaluating some of the other options though? For example the TypeScript-Node option uses the hugely popular but now deprecated Request library so can talk about longetivity of the generated code from that regard?
+\subsection{File Structure}
+\subsubsection{microservice-client}
+\begin{verbatim}
+    MicroServiceClient.ts
+\end{verbatim}
+\subsubsection{utils}
+\begin{verbatim}
+    Http.ts
+\end{verbatim}
+\begin{verbatim}
+    HttpVerbs.ts
+\end{verbatim}
+\begin{verbatim}
+    ErrorWrapper.ts
+\end{verbatim}
+\subsection{Other Files}
+\begin{verbatim}
+    Index.ts
+\end{verbatim}
+
+\section{Modifying the OpenAPI Code Generator}
+\subsection{Generating the base client}
+\subsection{Determining the differences between the generated client and my client}
+\subsection{Modifying the generated client}
+\subsection{Modifying the template files}
+What does it do - what needs changing? Kinda cheating but there's 5/6 potential choices for TypeScript frameworks for the generated code to use, there's an Axios option available so ties in pretty perfectly with my handcrafted-client, I guess it's worth evaluating some of the other options though? For example the TypeScript-Node option uses the hugely popular but now deprecated Request library so can talk about longevity of the generated code from that regard?
 
 What functionality is missing from the auto-gen that my client has
 
