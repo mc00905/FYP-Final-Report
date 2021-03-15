@@ -39,8 +39,6 @@ Descriptions of the planned API endpoints can be found below:
 
 \emph{All request and response bodies will be formatted as JSON.}
 
-TODO: add response bodies
-
 \begin{verbatim}
     GET /REST/1.0/shoppingItems
     Description:
@@ -52,9 +50,17 @@ TODO: add response bodies
         category: filter items matching the category provided
     Additional note:
         Endpoint will be paginated, pages accessed using the page query 
-        parameter + the nextPage field within the response body
-\end{verbatim}
-
+        parameter + the page and totalPages fields within the response body
+    Success Status Code: 200
+    Response: 
+        {
+            shoppingItems: Array of ShoppingItems. Number of items in the
+            array is either the default value, or the query parameter
+            pageSize.
+            page: current page number
+            totalPages: number of total pages
+        }
+\end{verbatim}\medskip
 
 \begin{verbatim}
     POST /REST/1.0/shoppingItems
@@ -66,8 +72,9 @@ TODO: add response bodies
             category: Category of the new shoppingItem,
             numberOfStock: Number of stock for the new shoppingItem,
         }
-\end{verbatim}
-
+    Success Status Code: 201
+    Response: No Response returned
+\end{verbatim}\medskip
 
 \begin{verbatim}
     GET /REST/1.0/shoppingItems/{name}
@@ -75,7 +82,10 @@ TODO: add response bodies
         Get an individual shoppingItem by name
     Path parameters:
         name: The name of the item being queried
-\end{verbatim}
+    Success Status Code: 200
+    Response:
+        shoppingItem
+\end{verbatim}\medskip
 
 \begin{verbatim}
     DELETE /REST/1.0/shoppingItems/{name}
@@ -83,7 +93,9 @@ TODO: add response bodies
         Delete an individual shoppingItem by name
     Path parameters:
         name: The name of the item being queried
-\end{verbatim}
+    Success Status Code: 204
+    Response: No Response returned
+\end{verbatim}\medskip
 
 \begin{verbatim}
     PUT /REST/1.0/shoppingItems/{name}/increaseStock
@@ -95,8 +107,10 @@ TODO: add response bodies
         {
             value: number to increment by
         }
-\end{verbatim}
-
+    Success Status Code: 200
+    Response:
+        shoppingItem
+\end{verbatim}\medskip
 
 \begin{verbatim}
     PUT /REST/1.0/shoppingItems/{name}/decreaseStock
@@ -108,7 +122,10 @@ TODO: add response bodies
         {
             value: number to decrement by
         }
-\end{verbatim}
+    Success Status Code: 200
+    Response:
+        shoppingItem
+\end{verbatim}\medskip
 
 
 \begin{verbatim}
@@ -121,11 +138,11 @@ TODO: add response bodies
         {
             category: new category value
         }
-\end{verbatim}
-
-
-
-
+    Success Status Code: 200
+    Response:
+        shoppingItem
+        
+\end{verbatim}\medskip
 
 \section{Technologies and Libraries}
 
@@ -211,12 +228,11 @@ The base of my handmade REST Client is the Axios HTTP library, and so utilising 
 The generated client is also setup as an NPM package, and so fulfils my concerns around easily importing and using the client in Node.js services. As a baseline, the generated code only has TypeScript and Axios as dependencies and therefore has no deprecated libraries in use. This should make it a fairly stable option longterm as Axios and TypeScript are both likely to stick around. 
 \section{Microservice}
 The micro-service will be broken down into a three layer architecture: the data layer, middleware layer and service layer.
-\subsection{The Data Layer}
+\subsection{data-layer}
 This layer will handle all of the business logic of the service, namely interacting with the database in order to fetch the information sent and requested through the API.
-\subsubsection{data-layer/models}
+\subsubsection{models/ShoppingItemModel.ts}
 The models directory will be where the Mongoose models and schemas for the service are defined. The schemas define the fields required for the documents within a collection, allowing validation by Mongoose automatically when the create and update wrappers are called. The model acts as interface for interacting with the schema, wrapping the CRUD operations boilerplate and packaging it into a simple object.  
 \begin{verbatim}
-    ShoppingItemModel.ts
         This file will define the Mongoose schema for the ShoppingItem 
         collection. It will define the shape of the data, and create the
         actual collection in MongoDB. It will then create a Mongoose 
@@ -229,10 +245,9 @@ The models directory will be where the Mongoose models and schemas for the servi
         the pagination function will not be needed as default and so the
         dependency is unnecessary.
 \end{verbatim}
-\subsubsection{data-layer/data-agents}
+\subsubsection{data-agents/ShoppingItemAgent.ts}
 The data-agents acts as a middleman between the controllers and the models. They take the data passed in from the controllers, do any processing or formatting required for the actual database queries. They then pass in the formatted data into the wrapper methods from the model with any configuration options relevant to the request. They then do any post-processing on the results that the controller might need before bubbling the result back up. The data-agents also handle and wrap any errors that might be thrown by the models and transform them into more helpful HTTP errors.
 \begin{verbatim}
-    ShoppingItemAgent.ts
         The ShoppingItemAgent will be the data-agent responsible for 
         calling and handling the ShoppingItemModel. It will contain 
         a method related to each of the REST API endpoints, and 
@@ -272,124 +287,271 @@ The data-agents acts as a middleman between the controllers and the models. They
         updateShoppingItemCategory()
             Simply update the ShoppingItemCategory of the document with the
             queried name. Uses the findOneAndUpdate() model method and the
-            new, updated version of the document will be returned.
+            new, updated version of the document will be returned. If no results 
+            are  found for the name passed in then a custom 
+            ShoppingItemNotFoundError is thrown with an assigned HTTP status 
+            code of 404.
+        
         
         increaseShoppingItemStock()
             Increment the NumberOfStock field of the document with the name
             passed in by the number in the value field. If the stock level is
             raised from 0 then the boolean InStock will be flipped. Again the
             method uses findOneAndUpdate() and returns the updated document.
+            If no ShoppingItem is found  with the queried name then a custom  
+            ShoppingItemNotFoundErroris thrown with an assigned HTTP status 
+            code of 404.
             
         decreaseShoppingItemStock()
             Decrement the NumberOfStock of the targeted document. Validation
             catches negatives number and sets the NumberOfStock to 0 in these
             cases. Model method used is findOneAndUpdate() with the modified 
-            form of the document being returned.
+            form of the document being returned. If no ShoppingItem is found 
+            with the queried name then a custom  ShoppingItemNotFoundError 
+            is thrown with an assigned HTTP status code of 404.
+        
+        deleteShoppingItem()
+            Delete the targeted ShoppingItem using the name field. Uses the
+            model function findOneAndRemove() to handle the deletion. If no 
+            ShoppingItem is found with the name passed in then a custom 
+            ShoppingItemNotFoundError is thrown with an assigned HTTP 
+            status code of 404.
         
 \end{verbatim}
-\subsection{The Middleware Layer}
+\subsection{middleware}
 This will be where the logic used across the micro-service will be abstracted and stored, mainly TypeScript types and error definitions. This will also be where the literal middleware is configured such as the rate limiting configuration and error handler.
-\subsubsection{middleware/enums}
+\subsubsection{enums/ShoppingItemCategories.ts}
 Simple enumeration types library for the micro-service. Helpful for ensuring only certain field values can get through the TSOA validation and across the controllers and data-agents.
 \begin{verbatim}
-    ShoppingItemCategories.ts
         A simple enumeration type detailing the valid ShoppingItem categories.
 \end{verbatim}
-\subsubsection{middleware/types}
+\subsubsection{types/ErrorLibrary.ts}
 \begin{verbatim}
-    ErrorLibrary.ts
-        The ErrorLibrary takes the generic ErrorWrappers and contextualises the
-        errors by injecting a unique ErrorIdentifier value into the error. This
-        allows the error to be easily identified at a glance. We can simply look
-        at where the specific error in the library is thrown and investigate the
-        cause from there. Not so important in this small service, but in a large
-        distributed system, identifying the root cause of errors is extremely
-        important and so this added context is a necessity as errors will be 
-        bubbling up across multiple services potentially.
+        The ErrorLibrary takes the generic ErrorWrappers and contextualises them
+        by assigning a value to the unique ErrorIdentifier field. 
+        This allows the error to be easily identified at a glance. We can simply 
+        look at where the specific error in the library is thrown and 
+        investigate the cause from there. Not so important in this small 
+        service, but in a  large distributed system, identifying the root cause
+        of errors  is extremely important and so this added context is a 
+        necessity as errors  will be potentially bubbling up across multiple 
+        services.
 \end{verbatim}
+\subsubsection{ShoppingItem.ts}
+
 \begin{verbatim}
-    ShoppingItem.ts
         Simple TypeScript interface for defining the ShoppingItem type for
         use across the service. Additionally usage of JSDoc annotation around
         the fields allows TSOA to add descriptions of each property to the
         OpenAPI Specification on generation.
 \end{verbatim}
-\subsubsection{middleware/}
+\subsubsection{ErrorHandler.ts}
 \begin{verbatim}
-    ErrorHandler.ts
+        Custom error handling middleware. Has explicit handling of the
+        ErrorWrapper errors thrown by the data-agents as well as handling
+        the validation thrown by TSOA. This ensures the additional meta
+        properties of the error are returned to the user and that the 
+        status codes are set as expected.If the error is neither of 
+        these formats it gets piped onto a handler for generic errors
+        which uses a default error message and status code if they are
+        missing.
+        All of the error bodies are returned as JSON to maintain the
+        language-agnostic nature of the API.
 \end{verbatim}
+\subsubsection{ErrorWrapper.ts}
 \begin{verbatim}
-    ErrorWrapper.ts
+        Custom extensions of the default Node.js Error object. Adds
+        custom fields for additional details, status code and a unique
+        error identifier. This generic ErrorWrapper is further extended
+        by implementations for each expected HTTP status code, where the
+        extended class simply defines the status code for its parent
+        ErrorWrapper object.
 \end{verbatim}
+\subsubsection{RateLimiter.ts}
+
 \begin{verbatim}
-    RateLimiter.ts
+        Super simple implementation of the Express-Rate-Limit package,
+        essentially assigning configuration values.
 \end{verbatim}
-\subsection{The Service Layer}
+\subsection{service-layer}
 The Service layer will handle all of the logic associated with serving and processing the HTTP requests. This will be where all the controllers are defined and where the TSOA generated route files are created.
-\subsubsection{service-layer/controllers}
+\subsubsection{controllers/ShoppingItemController.ts}
 \begin{verbatim}
-    ShoppingItemController.ts
+        The ShoppingItemController is where all of the TSOA related
+        definitions and decorating is configured.
+        
+        The base ShoppingItemController class is decorated using
+        the Route() decorator. This defines the base URL that
+        all of the method specific URLs will append. In this case
+        it is set to "/REST/1.0/shoppingItems".
+        
+        JSDoc notation will be used across the controller class,
+        primarily before method definitions to provide TSOA with
+        information about method descriptions and examples for fields and
+        parameters.
+        Additional decorators are injected in to help document any
+        expected errors that the API will throw. This is done through
+        the use of the @Res decorator and will add the error information
+        to the OpenAPI Specification.
+        
+        Additonal Decorators used
+            @Get @Post @Put @Delete: Map URL and HTTP Verb to the
+            function. Under the hood URL is set to {baseUrl}/{URL}
+            e.g. Get(/{name}) -> GET /REST/1.0/shoppingItems/{name}
+            @Path(): Define a path parameter, maps the field within the
+            URL to a variable.
+            @Query(): Define a query parameter,maps the field within the
+            URL to a variable.
+            @Body(): Define the request body, maps the request body to a 
+            variable.
+            @Response(): Define errors, subtly different from @Res
+            and only works with more static errors like the TSOA
+            ValidationError.
+            @Example(): Define an example response for the generated
+            OpenAPI Specification.
+            
+        
+        See the API documentation for detailed information on the API.
+        
+        createShoppingItem()
+            Mapped to:
+                POST /REST/1.0/shoppingItems
+            Passes in the request body information to the createShoppingItem()
+            function in the ShoppingItemAgent and decorates the response
+            status code as 201 to represent the resource successfully being
+            created.
+        
+        getShoppingItems()
+            Mapped to:
+                GET /REST/1.0/shoppingItems
+            Calls getShoppingItems() method from the agent and passes in the
+            optional query parameters for filtering and pagination if they are
+            present. Simply returns the response from the agent alongside a
+            200 status code.
+        
+        getShoppingItem()
+            Mapped to:
+                GET /REST/1.0/shoppingItems/{name}
+            Passes in the path parameter name to the getShoppingItem() agent
+            method. Returns the response from the function with a HTTP status
+            code 200.
+        
+        updateShoppingItemCategory()
+            Mapped to:
+                PUT /REST/1.0/shoppingItems/{name}/category
+            Call the updateShoppingItemCategory() agent function with both
+            the name path parameter and the request body fields. As we are
+            returning the updated document set the status code to 200.
+            
+        increaseShoppingItemStock()
+            Mapped to:
+                PUT /REST/1.0/shoppingItems/{name}/increaseStock
+            Call the increaseShoppingItemStock() agent function with both
+            the name path parameter and the request body fields. As we are
+            returning the updated document set the status code to 200.
+            
+        decreaseShoppingItemStock()
+            Mapped to:
+                PUT /REST/1.0/shoppingItems/{name}/decreaseStock
+            Call the decreaseShoppingItemStock() agent function with both
+            the name path parameter and the request body fields. As we are
+            returning the updated document set the status code to 200.
+            
+        deleteShoppingItem()
+            Mapped to:
+                DELETE /REST/1.0/shoppingItems/{name}
+            Pass in the name path parameter to the deleteShoppingItem()
+            agent method. Decorate the response status code as a 204 to
+            inform the API consumer the resource was deleted. 
 \end{verbatim}
-\subsubsection{service-layer/routes}
+\subsubsection{routes/Routes.ts}
 \begin{verbatim}
-    Routes.ts
+        TSOA generated routes for the REST API based on information
+        provided in the controller files.
 \end{verbatim}
-\subsection{Other Files}
+\subsection{Root Files}
 Some files relating package and actual server configuration do not really belong in any of the layers and so are stored at the root level.
+\subsubsection{App.ts}
 \begin{verbatim}
-    App.ts
+        The App.ts file contains all the logic for injecting
+        all of the middleware into the application such as the custom
+        error handlers, the rate limiting functionality from 
+        RateLimiter.ts as well as the mongoose database connection 
+        configuration.
+        
+        The file also defines a static route "/REST/1.0/documention"
+        that serves the SwaggerUI HTML page from the swagger-ui-express
+        package. The generateHTML() method is called on the TSOA
+        generated OpenAPI Specification "swagger.json" and is
+        returned as the routes response.
 \end{verbatim}
+\subsubsection{Server.ts}
 \begin{verbatim}
-    Server.ts
+        Simple configuration file for starting up the Node.js server.
 \end{verbatim}
+\subsubsection{tsoa.json}
 \begin{verbatim}
-    tsoa.json
+        Configuration files for TSOA specifying the framework 
+        that the routes should be generated for as well as the 
+        directories for the different files to be pulled from and 
+        where others will be generated.
 \end{verbatim}
 \subsection{Commands Used}
+\subsubsection{Generating routes through TSOA}
+\begin{verbatim}
+    tsoa routes
+\end{verbatim}
 \subsubsection{Generating an OpenAPI Specification from the Controllers}
-
+\begin{verbatim}
+    tsoa spec
+\end{verbatim}
+\subsubsection{Compiling \& building the Service}
+\begin{verbatim}
+    tsc --outDir dist --experimentalDecorators
+\end{verbatim}
+\subsubsection{Starting the Service}
+\begin{verbatim}
+    node dist/Server.js
+\end{verbatim}
 
 \subsection{Overall Service Diagram}
 INSERT DIAGRAM SHOWING HOW ALL THE FILES ETC COMMUNICATE I.E. CONTROLLER --> AGENT ETC, FLOW CHART TOO MAYBE? ERROR/SUCCESS FLOW..
 
 \section{API Client}
-As above
-
-Additional information about designing it as an NPM module, dependency that can be consumed 
-
-Can I talk about it being published without actually having to publish the package? No big deal if so, just avoids some hassle.
-
-\subsubsection{Publishing the library}
-
-\subsection{File Structure}
-\subsubsection{microservice-client}
+Intro
+\subsection{Publishing the library}
+    Basic explanation of NPM - package written -> goes to registry -> NPM/YARN install
+\subsection{microservice-client}
+\subsubsection{MicroServiceClient.ts}
 \begin{verbatim}
-    MicroServiceClient.ts
 \end{verbatim}
-\subsubsection{utils}
+\subsection{utils}
+\subsubsection{Http.ts}
 \begin{verbatim}
     Http.ts
 \end{verbatim}
+\subsubsection{HttpVerbs.ts}
 \begin{verbatim}
     HttpVerbs.ts
 \end{verbatim}
+\subsubsection{ErrorWrapper.ts}
 \begin{verbatim}
     ErrorWrapper.ts
 \end{verbatim}
-\subsection{Other Files}
+\subsection{Root Files}
+\subsubsection{Index.ts}
 \begin{verbatim}
     Index.ts
 \end{verbatim}
 
 \section{Modifying the OpenAPI Code Generator}
 \subsection{Generating the base client}
+Commands - output -> not much to say really
 \subsection{Determining the differences between the generated client and my client}
+What is there, overlap, missing etc. Talk about overlap of Axios etc, justifies the choice of the option.
+Venn diagram
 \subsection{Modifying the generated client}
+Changing the generated code, so changing the output of the command, not the files for templating
+If it works move on, otherwise what should do etc
 \subsection{Modifying the template files}
-What does it do - what needs changing? Kinda cheating but there's 5/6 potential choices for TypeScript frameworks for the generated code to use, there's an Axios option available so ties in pretty perfectly with my handcrafted-client, I guess it's worth evaluating some of the other options though? For example the TypeScript-Node option uses the hugely popular but now deprecated Request library so can talk about longevity of the generated code from that regard?
-
-What functionality is missing from the auto-gen that my client has
-
-Venn diagram a good way of showing this? Any other visual options you can think of?
-
-How am I gonna implement it (for the most part will essentially copy and paste into the template files) -> talk about best way to add it to mustache template files - although for the most part the additions will be static imports/code additions, no need for pulling templating fields out
+Pulling the changes made to gen code, forking the generator repo and modifying the mustache template files

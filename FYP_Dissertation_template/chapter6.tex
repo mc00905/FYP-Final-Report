@@ -3,10 +3,18 @@
 This section will detail my plans on how I will test my solutions, and how I will determine how they have measured up against the specifications defined for them.
 \section{Unit Testing with Jest and Nock}
 \subsection{Jest}
+General framework reasoning - Tie in to code coverage with Istanbul NYC built in
+- high coverage = well tested
 \subsection{Nock}
-\subsection{Code Coverage}
+Using the library for creating intercepting mock http requests - can show rate limiting handling works etc
 \subsection{Testing the handcrafted client}
 \subsubsection{Intercepting HTTP requests with Nock and testing the clients handling}
+How do nock + jest tie together
+testing each method - does it pull out the responses, handle errror and rate limiting
 \section{End to end testing the auto-generated client with the micro-service}
 \subsection{Calling Endpoints}
+Actually press the buttons, use ts-node to call an index file with function calls. 
+Does the generated code work - call endpoints correctly. Does typescript pick up the typings. Do the added features work
 \section{Back to the Objectives}
+Have they been fulfilled etc
+Why, why not
