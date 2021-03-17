@@ -26,21 +26,22 @@ As such, the base endpoint will be:
 
 Support will need to be provided for all CRUD operations for an API, supporting the HTTP verbs GET, POST, PUT and DELETE. Both a singular shoppingItem and the contents of the collection need to be fetched, and a subset of the properties of individual shoppingItems will need to be updated. New shoppingItems will need support for creation, and existing shoppingItems need to be able to be deleted.
 
-\emph{Individual shoppingItems will have the following properties:}
+\subsection{The API}
+Descriptions of the planned API endpoints can be found below:
+
+\emph{All request and response bodies will be formatted as JSON.}
+
+\subsubsection{The shoppingItem Response Object}
+\emph{Each shoppingItem will have the following properties:}
 \begin{verbatim}
     name: A string representing the unique name of the shoppingItem.
     category: An enumerated type representing the type of shoppingItem.
     numberOfStock: A representation of the number of the shoppingItem in stock
     inStock: A boolean representing the state of numberOfStock > 0
 \end{verbatim}
-
-\subsection{API Endpoints}
-Descriptions of the planned API endpoints can be found below: 
-
-\emph{All request and response bodies will be formatted as JSON.}
-
+\subsubsection{API Endpoints}
 \begin{verbatim}
-    GET /REST/1.0/shoppingItems
+GET /REST/1.0/shoppingItems
     Description:
         Retrieve all shoppingItems
     Query Parameters:
@@ -54,8 +55,7 @@ Descriptions of the planned API endpoints can be found below:
     Success Status Code: 200
     Response: 
         {
-            shoppingItems: Array of ShoppingItems. Number of items in the
-            array is either the default value, or the query parameter
+            shoppingItems: shoppingItem[]
             pageSize.
             page: current page number
             totalPages: number of total pages
@@ -63,7 +63,7 @@ Descriptions of the planned API endpoints can be found below:
 \end{verbatim}\medskip
 
 \begin{verbatim}
-    POST /REST/1.0/shoppingItems
+POST /REST/1.0/shoppingItems
     Description:
         Create a new shoppingItem
     Request Body:
@@ -77,7 +77,7 @@ Descriptions of the planned API endpoints can be found below:
 \end{verbatim}\medskip
 
 \begin{verbatim}
-    GET /REST/1.0/shoppingItems/{name}
+GET /REST/1.0/shoppingItems/{name}
     Description:
         Get an individual shoppingItem by name
     Path parameters:
@@ -88,7 +88,7 @@ Descriptions of the planned API endpoints can be found below:
 \end{verbatim}\medskip
 
 \begin{verbatim}
-    DELETE /REST/1.0/shoppingItems/{name}
+DELETE /REST/1.0/shoppingItems/{name}
     Description:
         Delete an individual shoppingItem by name
     Path parameters:
@@ -98,7 +98,7 @@ Descriptions of the planned API endpoints can be found below:
 \end{verbatim}\medskip
 
 \begin{verbatim}
-    PUT /REST/1.0/shoppingItems/{name}/increaseStock
+PUT /REST/1.0/shoppingItems/{name}/increaseStock
     Description:
         Increase the named shoppingItem stock by value provided in body
     Path parameters:
@@ -113,7 +113,7 @@ Descriptions of the planned API endpoints can be found below:
 \end{verbatim}\medskip
 
 \begin{verbatim}
-    PUT /REST/1.0/shoppingItems/{name}/decreaseStock
+PUT /REST/1.0/shoppingItems/{name}/decreaseStock
     Description:
         Decrease the named shoppingItem stock by value provided in body
     Path parameters:
@@ -129,7 +129,7 @@ Descriptions of the planned API endpoints can be found below:
 
 
 \begin{verbatim}
-    PUT /REST/1.0/shoppingItems/{name}/category
+PUT /REST/1.0/shoppingItems/{name}/category
     Description:
         Update the named shoppingItem category
     Path parameters:
@@ -227,95 +227,95 @@ The base of my handmade REST Client is the Axios HTTP library, and so utilising 
 
 The generated client is also setup as an NPM package, and so fulfils my concerns around easily importing and using the client in Node.js services. As a baseline, the generated code only has TypeScript and Axios as dependencies and therefore has no deprecated libraries in use. This should make it a fairly stable option longterm as Axios and TypeScript are both likely to stick around. 
 \section{Microservice}
-The micro-service will be broken down into a three layer architecture: the data layer, middleware layer and service layer.
+The micro-service is a Express based Node.js service broken down into a three layer architecture: the \emph{data-layer}, \emph{middleware} and \emph{service-layer}.
 \subsection{data-layer}
 This layer will handle all of the business logic of the service, namely interacting with the database in order to fetch the information sent and requested through the API.
 \subsubsection{models/ShoppingItemModel.ts}
 The models directory will be where the Mongoose models and schemas for the service are defined. The schemas define the fields required for the documents within a collection, allowing validation by Mongoose automatically when the create and update wrappers are called. The model acts as interface for interacting with the schema, wrapping the CRUD operations boilerplate and packaging it into a simple object.  
 \begin{verbatim}
-        This file will define the Mongoose schema for the ShoppingItem 
-        collection. It will define the shape of the data, and create the
-        actual collection in MongoDB. It will then create a Mongoose 
-        model that exposes all of the CRUD operations related to the 
-        collection. This will allow the data-agents to  interact with
-        the database without writing unnecessary boilerplate code. The
-        Mongoose-Paginate-V2 plugin will also be wired into the schema 
-        providing isolated access to the paginate functionality within
-        only this collection. If any further collections are to be added,
-        the pagination function will not be needed as default and so the
-        dependency is unnecessary.
+    This file will define the Mongoose schema for the ShoppingItem 
+    collection. It will define the shape of the data, and create the
+    actual collection in MongoDB. It will then create a Mongoose 
+    model that exposes all of the CRUD operations related to the 
+    collection. This will allow the data-agents to  interact with
+    the database without writing unnecessary boilerplate code. The
+    Mongoose-Paginate-V2 plugin will also be wired into the schema 
+    providing isolated access to the paginate functionality within
+    only this collection. If any further collections are to be added,
+    the pagination function will not be needed as default and so the
+    dependency is unnecessary.
 \end{verbatim}
 \subsubsection{data-agents/ShoppingItemAgent.ts}
 The data-agents acts as a middleman between the controllers and the models. They take the data passed in from the controllers, do any processing or formatting required for the actual database queries. They then pass in the formatted data into the wrapper methods from the model with any configuration options relevant to the request. They then do any post-processing on the results that the controller might need before bubbling the result back up. The data-agents also handle and wrap any errors that might be thrown by the models and transform them into more helpful HTTP errors.
 \begin{verbatim}
-        The ShoppingItemAgent will be the data-agent responsible for 
-        calling and handling the ShoppingItemModel. It will contain 
-        a method related to each of the REST API endpoints, and 
-        using the data passed into it from the ShoppingItemController
-        will interact with the ShoppingItem collection. It will handle
-        any logic involved in both the pre and post-processing of data
-        and will map an errors thrown into one of the errors from the 
-        ErrorLibrary.
+    The ShoppingItemAgent will be the data-agent responsible for 
+    calling and handling the ShoppingItemModel. It will contain 
+    a method related to each of the REST API endpoints, and 
+    using the data passed into it from the ShoppingItemController
+    will interact with the ShoppingItem collection. It will handle
+    any logic involved in both the pre and post-processing of data
+    and will map an errors thrown into one of the errors from the 
+    ErrorLibrary.
+    
+    createShoppingItem()
+        Method related to the creation of a ShoppingItem within the
+        database. Will call the findOneAndUpdate() model method. The use
+        of the ShoppingItem name as the unique identifier for the
+        collection means that namespace collisions need to be avoided
+        and so using the findOneAndUpdate function with the upsert flag
+        set will overwrite the previous document with the name if the same
+        name is used again.
+    
+    getShoppingItem()
+        Fetch an individual ShoppingItem from the collection based on a
+        name field passed in. Simple usage of the findOne() model method
+        using a query built around the name field. If no results are 
+        returned then a custom ShoppingItemNotFoundError is thrown with 
+        an assigned HTTP status code of 404.
+    
+    getShoppingItems()
+        Method for requesting multiple ShoppingItems, either the entire
+        collection, or a subset based on parameters for ShoppingItemCategory
+        or the inStock boolean.
+        Results will be paginated, and information related to current page
+        and total number of pages will be returned in the response.
+        Different pages can be accessed through usage of the Page parameter 
+        and the number of results per page can be changed through the 
+        PageSize parameter. If no results are found an empty array will be
+        returned. 
+    
+    updateShoppingItemCategory()
+        Simply update the ShoppingItemCategory of the document with the
+        queried name. Uses the findOneAndUpdate() model method and the
+        new, updated version of the document will be returned. If no results 
+        are  found for the name passed in then a custom 
+        ShoppingItemNotFoundError is thrown with an assigned HTTP status 
+        code of 404.
+    
+    
+    increaseShoppingItemStock()
+        Increment the NumberOfStock field of the document with the name
+        passed in by the number in the value field. If the stock level is
+        raised from 0 then the boolean InStock will be flipped. Again the
+        method uses findOneAndUpdate() and returns the updated document.
+        If no ShoppingItem is found  with the queried name then a custom  
+        ShoppingItemNotFoundErroris thrown with an assigned HTTP status 
+        code of 404.
         
-        createShoppingItem()
-            Method related to the creation of a ShoppingItem within the
-            database. Will call the findOneAndUpdate() model method. The use
-            of the ShoppingItem name as the unique identifier for the
-            collection means that namespace collisions need to be avoided
-            and so using the findOneAndUpdate function with the upsert flag
-            set will overwrite the previous document with the name if the same
-            name is used again.
-        
-        getShoppingItem()
-            Fetch an individual ShoppingItem from the collection based on a
-            name field passed in. Simple usage of the findOne() model method
-            using a query built around the name field. If no results are 
-            returned then a custom ShoppingItemNotFoundError is thrown with 
-            an assigned HTTP status code of 404.
-        
-        getShoppingItems()
-            Method for requesting multiple ShoppingItems, either the entire
-            collection, or a subset based on parameters for ShoppingItemCategory
-            or the inStock boolean.
-            Results will be paginated, and information related to current page
-            and total number of pages will be returned in the response.
-            Different pages can be accessed through usage of the Page parameter 
-            and the number of results per page can be changed through the 
-            PageSize parameter. If no results are found an empty array will be
-            returned. 
-        
-        updateShoppingItemCategory()
-            Simply update the ShoppingItemCategory of the document with the
-            queried name. Uses the findOneAndUpdate() model method and the
-            new, updated version of the document will be returned. If no results 
-            are  found for the name passed in then a custom 
-            ShoppingItemNotFoundError is thrown with an assigned HTTP status 
-            code of 404.
-        
-        
-        increaseShoppingItemStock()
-            Increment the NumberOfStock field of the document with the name
-            passed in by the number in the value field. If the stock level is
-            raised from 0 then the boolean InStock will be flipped. Again the
-            method uses findOneAndUpdate() and returns the updated document.
-            If no ShoppingItem is found  with the queried name then a custom  
-            ShoppingItemNotFoundErroris thrown with an assigned HTTP status 
-            code of 404.
-            
-        decreaseShoppingItemStock()
-            Decrement the NumberOfStock of the targeted document. Validation
-            catches negatives number and sets the NumberOfStock to 0 in these
-            cases. Model method used is findOneAndUpdate() with the modified 
-            form of the document being returned. If no ShoppingItem is found 
-            with the queried name then a custom  ShoppingItemNotFoundError 
-            is thrown with an assigned HTTP status code of 404.
-        
-        deleteShoppingItem()
-            Delete the targeted ShoppingItem using the name field. Uses the
-            model function findOneAndRemove() to handle the deletion. If no 
-            ShoppingItem is found with the name passed in then a custom 
-            ShoppingItemNotFoundError is thrown with an assigned HTTP 
-            status code of 404.
+    decreaseShoppingItemStock()
+        Decrement the NumberOfStock of the targeted document. Validation
+        catches negatives number and sets the NumberOfStock to 0 in these
+        cases. Model method used is findOneAndUpdate() with the modified 
+        form of the document being returned. If no ShoppingItem is found 
+        with the queried name then a custom  ShoppingItemNotFoundError 
+        is thrown with an assigned HTTP status code of 404.
+    
+    deleteShoppingItem()
+        Delete the targeted ShoppingItem using the name field. Uses the
+        model function findOneAndRemove() to handle the deletion. If no 
+        ShoppingItem is found with the name passed in then a custom 
+        ShoppingItemNotFoundError is thrown with an assigned HTTP 
+        status code of 404.
         
 \end{verbatim}
 \subsection{middleware}
@@ -323,178 +323,185 @@ This will be where the logic used across the micro-service will be abstracted an
 \subsubsection{enums/ShoppingItemCategories.ts}
 Simple enumeration types library for the micro-service. Helpful for ensuring only certain field values can get through the TSOA validation and across the controllers and data-agents.
 \begin{verbatim}
-        A simple enumeration type detailing the valid ShoppingItem categories.
+    A simple enumeration type detailing the valid ShoppingItem categories.
 \end{verbatim}
 \subsubsection{types/ErrorLibrary.ts}
 \begin{verbatim}
-        The ErrorLibrary takes the generic ErrorWrappers and contextualises them
-        by assigning a value to the unique ErrorIdentifier field. 
-        This allows the error to be easily identified at a glance. We can simply 
-        look at where the specific error in the library is thrown and 
-        investigate the cause from there. Not so important in this small 
-        service, but in a  large distributed system, identifying the root cause
-        of errors  is extremely important and so this added context is a 
-        necessity as errors  will be potentially bubbling up across multiple 
-        services.
+    The ErrorLibrary takes the generic ErrorWrappers and contextualises them
+    by assigning a value to the unique ErrorIdentifier field. 
+    This allows the error to be easily identified at a glance. We can simply 
+    look at where the specific error in the library is thrown and 
+    investigate the cause from there. Not so important in this small 
+    service, but in a  large distributed system, identifying the root cause
+    of errors  is extremely important and so this added context is a 
+    necessity as errors  will be potentially bubbling up across multiple 
+    services.
 \end{verbatim}
 \subsubsection{ShoppingItem.ts}
 
 \begin{verbatim}
-        Simple TypeScript interface for defining the ShoppingItem type for
-        use across the service. Additionally usage of JSDoc annotation around
-        the fields allows TSOA to add descriptions of each property to the
-        OpenAPI Specification on generation.
+    Simple TypeScript interface for defining the ShoppingItem type for
+    use across the service. Additionally usage of JSDoc annotation around
+    the fields allows TSOA to add descriptions of each property to the
+    OpenAPI Specification on generation.
 \end{verbatim}
 \subsubsection{ErrorHandler.ts}
 \begin{verbatim}
-        Custom error handling middleware. Has explicit handling of the
-        ErrorWrapper errors thrown by the data-agents as well as handling
-        the validation thrown by TSOA. This ensures the additional meta
-        properties of the error are returned to the user and that the 
-        status codes are set as expected.If the error is neither of 
-        these formats it gets piped onto a handler for generic errors
-        which uses a default error message and status code if they are
-        missing.
-        All of the error bodies are returned as JSON to maintain the
-        language-agnostic nature of the API.
+    Custom error handling middleware. Has explicit handling of the
+    ErrorWrapper errors thrown by the data-agents as well as handling
+    the validation thrown by TSOA. This ensures the additional meta
+    properties of the error are returned to the user and that the 
+    status codes are set as expected.If the error is neither of 
+    these formats it gets piped onto a handler for generic errors
+    which uses a default error message and status code if they are
+    missing.
+    All of the error bodies are returned as JSON to maintain the
+    language-agnostic nature of the API.
 \end{verbatim}
 \subsubsection{ErrorWrapper.ts}
 \begin{verbatim}
-        Custom extensions of the default Node.js Error object. Adds
-        custom fields for additional details, status code and a unique
-        error identifier. This generic ErrorWrapper is further extended
-        by implementations for each expected HTTP status code, where the
-        extended class simply defines the status code for its parent
-        ErrorWrapper object.
+    Custom extensions of the default Node.js Error object. Adds
+    custom fields for additional details, status code and a unique
+    error identifier. This generic ErrorWrapper is further extended
+    by implementations for each expected HTTP status code, where the
+    extended class simply defines the status code for its parent
+    ErrorWrapper object.
 \end{verbatim}
 \subsubsection{RateLimiter.ts}
 
 \begin{verbatim}
-        Super simple implementation of the Express-Rate-Limit package,
-        essentially assigning configuration values.
+    Super simple implementation of the Express-Rate-Limit package,
+    essentially assigning configuration values.
 \end{verbatim}
 \subsection{service-layer}
-The Service layer will handle all of the logic associated with serving and processing the HTTP requests. This will be where all the controllers are defined and where the TSOA generated route files are created.
+The \emph{service-layer} will handle all of the logic associated with serving and processing the HTTP requests. This will be where all the controllers are defined and where the TSOA generated route files are created.
 \subsubsection{controllers/ShoppingItemController.ts}
 \begin{verbatim}
-        The ShoppingItemController is where all of the TSOA related
-        definitions and decorating is configured.
-        
-        The base ShoppingItemController class is decorated using
-        the Route() decorator. This defines the base URL that
-        all of the method specific URLs will append. In this case
-        it is set to "/REST/1.0/shoppingItems".
-        
-        JSDoc notation will be used across the controller class,
-        primarily before method definitions to provide TSOA with
-        information about method descriptions and examples for fields and
-        parameters.
-        Additional decorators are injected in to help document any
-        expected errors that the API will throw. This is done through
-        the use of the @Res decorator and will add the error information
-        to the OpenAPI Specification.
-        
-        Additonal Decorators used
-            @Get @Post @Put @Delete: Map URL and HTTP Verb to the
-            function. Under the hood URL is set to {baseUrl}/{URL}
-            e.g. Get(/{name}) -> GET /REST/1.0/shoppingItems/{name}
-            @Path(): Define a path parameter, maps the field within the
+    The ShoppingItemController is where all of the TSOA related
+    definitions and decorating is configured.
+    
+    The base ShoppingItemController class is decorated using
+    the Route() decorator. This defines the base URL that
+    all of the method specific URLs will append. In this case
+    it is set to "/REST/1.0/shoppingItems".
+    
+    JSDoc notation will be used across the controller class,
+    primarily before method definitions to provide TSOA with
+    information about method descriptions and examples for fields and
+    parameters.
+    Additional decorators are injected in to help document any
+    expected errors that the API will throw. This is done through
+    the use of the @Res decorator and will add the error information
+    to the OpenAPI Specification.
+    
+    Other Decorators used:
+        @Get() @Post() @Put() @Delete(): 
+            Map URL and HTTP Verb to the
+            function. 
+            Under the hood URL is set to {baseUrl}/{URL}
+                Get(/{name}) => GET /REST/1.0/shoppingItems/{name}
+        @Path(): 
+            Define a path parameter, maps the field within the
             URL to a variable.
-            @Query(): Define a query parameter,maps the field within the
+        @Query(): 
+            Define a query parameter,maps the field within the
             URL to a variable.
-            @Body(): Define the request body, maps the request body to a 
+        @Body(): 
+            Define the request body, maps the request body to a 
             variable.
-            @Response(): Define errors, subtly different from @Res
+        @Response(): 
+            Define errors, subtly different from @Res
             and only works with more static errors like the TSOA
             ValidationError.
-            @Example(): Define an example response for the generated
+        @Example(): 
+            Define an example response for the generated
             OpenAPI Specification.
-            
         
-        See the API documentation for detailed information on the API.
+    
+    See the API documentation for detailed information on the API.
+    
+    createShoppingItem()
+        Mapped to:
+            POST /REST/1.0/shoppingItems
+        Passes in the request body information to the createShoppingItem()
+        function in the ShoppingItemAgent and decorates the response
+        status code as 201 to represent the resource successfully being
+        created.
+    
+    getShoppingItems()
+        Mapped to:
+            GET /REST/1.0/shoppingItems
+        Calls getShoppingItems() method from the agent and passes in the
+        optional query parameters for filtering and pagination if they are
+        present. Simply returns the response from the agent alongside a
+        200 status code.
+    
+    getShoppingItem()
+        Mapped to:
+            GET /REST/1.0/shoppingItems/{name}
+        Passes in the path parameter name to the getShoppingItem() agent
+        method. Returns the response from the function with a HTTP status
+        code 200.
+    
+    updateShoppingItemCategory()
+        Mapped to:
+            PUT /REST/1.0/shoppingItems/{name}/category
+        Call the updateShoppingItemCategory() agent function with both
+        the name path parameter and the request body fields. As we are
+        returning the updated document set the status code to 200.
         
-        createShoppingItem()
-            Mapped to:
-                POST /REST/1.0/shoppingItems
-            Passes in the request body information to the createShoppingItem()
-            function in the ShoppingItemAgent and decorates the response
-            status code as 201 to represent the resource successfully being
-            created.
+    increaseShoppingItemStock()
+        Mapped to:
+            PUT /REST/1.0/shoppingItems/{name}/increaseStock
+        Call the increaseShoppingItemStock() agent function with both
+        the name path parameter and the request body fields. As we are
+        returning the updated document set the status code to 200.
         
-        getShoppingItems()
-            Mapped to:
-                GET /REST/1.0/shoppingItems
-            Calls getShoppingItems() method from the agent and passes in the
-            optional query parameters for filtering and pagination if they are
-            present. Simply returns the response from the agent alongside a
-            200 status code.
+    decreaseShoppingItemStock()
+        Mapped to:
+            PUT /REST/1.0/shoppingItems/{name}/decreaseStock
+        Call the decreaseShoppingItemStock() agent function with both
+        the name path parameter and the request body fields. As we are
+        returning the updated document set the status code to 200.
         
-        getShoppingItem()
-            Mapped to:
-                GET /REST/1.0/shoppingItems/{name}
-            Passes in the path parameter name to the getShoppingItem() agent
-            method. Returns the response from the function with a HTTP status
-            code 200.
-        
-        updateShoppingItemCategory()
-            Mapped to:
-                PUT /REST/1.0/shoppingItems/{name}/category
-            Call the updateShoppingItemCategory() agent function with both
-            the name path parameter and the request body fields. As we are
-            returning the updated document set the status code to 200.
-            
-        increaseShoppingItemStock()
-            Mapped to:
-                PUT /REST/1.0/shoppingItems/{name}/increaseStock
-            Call the increaseShoppingItemStock() agent function with both
-            the name path parameter and the request body fields. As we are
-            returning the updated document set the status code to 200.
-            
-        decreaseShoppingItemStock()
-            Mapped to:
-                PUT /REST/1.0/shoppingItems/{name}/decreaseStock
-            Call the decreaseShoppingItemStock() agent function with both
-            the name path parameter and the request body fields. As we are
-            returning the updated document set the status code to 200.
-            
-        deleteShoppingItem()
-            Mapped to:
-                DELETE /REST/1.0/shoppingItems/{name}
-            Pass in the name path parameter to the deleteShoppingItem()
-            agent method. Decorate the response status code as a 204 to
-            inform the API consumer the resource was deleted. 
+    deleteShoppingItem()
+        Mapped to:
+            DELETE /REST/1.0/shoppingItems/{name}
+        Pass in the name path parameter to the deleteShoppingItem()
+        agent method. Decorate the response status code as a 204 to
+        inform the API consumer the resource was deleted. 
 \end{verbatim}
 \subsubsection{routes/Routes.ts}
 \begin{verbatim}
-        TSOA generated routes for the REST API based on information
-        provided in the controller files.
+    TSOA generated routes for the REST API based on information
+    provided in the controller files.
 \end{verbatim}
 \subsection{Root Files}
 Some files relating package and actual server configuration do not really belong in any of the layers and so are stored at the root level.
 \subsubsection{App.ts}
 \begin{verbatim}
-        The App.ts file contains all the logic for injecting
-        all of the middleware into the application such as the custom
-        error handlers, the rate limiting functionality from 
-        RateLimiter.ts as well as the mongoose database connection 
-        configuration.
-        
-        The file also defines a static route "/REST/1.0/documention"
-        that serves the SwaggerUI HTML page from the swagger-ui-express
-        package. The generateHTML() method is called on the TSOA
-        generated OpenAPI Specification "swagger.json" and is
-        returned as the routes response.
+    The App.ts file contains all the logic for injecting
+    all of the middleware into the application such as the custom
+    error handlers, the rate limiting functionality from 
+    RateLimiter.ts as well as the mongoose database connection 
+    configuration.
+    
+    The file also defines a static route "/REST/1.0/documention"
+    that serves the SwaggerUI HTML page from the swagger-ui-express
+    package. The generateHTML() method is called on the TSOA
+    generated OpenAPI Specification "swagger.json" and is
+    returned as the routes response.
 \end{verbatim}
 \subsubsection{Server.ts}
 \begin{verbatim}
-        Simple configuration file for starting up the Node.js server.
+    Simple configuration file for starting up the Node.js server.
 \end{verbatim}
 \subsubsection{tsoa.json}
 \begin{verbatim}
-        Configuration files for TSOA specifying the framework 
-        that the routes should be generated for as well as the 
-        directories for the different files to be pulled from and 
-        where others will be generated.
+    Configuration files for TSOA specifying the framework 
+    that the routes should be generated for as well as the 
+    directories for the different files to be pulled from and 
+    where others will be generated.
 \end{verbatim}
 \subsection{Commands Used}
 \subsubsection{Generating routes through TSOA}
@@ -518,40 +525,98 @@ Some files relating package and actual server configuration do not really belong
 INSERT DIAGRAM SHOWING HOW ALL THE FILES ETC COMMUNICATE I.E. CONTROLLER --> AGENT ETC, FLOW CHART TOO MAYBE? ERROR/SUCCESS FLOW..
 
 \section{API Client}
-Intro
-\subsection{Publishing the library}
-    Basic explanation of NPM - package written -> goes to registry -> NPM/YARN install
-\subsection{microservice-client}
-\subsubsection{MicroServiceClient.ts}
-\begin{verbatim}
-\end{verbatim}
+The API Client will be built as an NPM Package essentially acting as a wrapper for other imported libraries. The architecture will be simple, with the package essentially broken down into two directories, \emph{utils} and \emph{microservice-client}.
 \subsection{utils}
+The \emph{utils} directory will store the more abstract functionality, the methods for generically making HTTP requests and handling errors without the context for the specific micro-service API.
 \subsubsection{Http.ts}
 \begin{verbatim}
-    Http.ts
+    The Http file contains the Http class, built on top of the Axios library. 
+    
+    constructor()
+        The constructor generates an AxiosInstance using the baseUrl and 
+        optional customHeaders parameters that will be used for making the 
+        HTTP requests. Upon creation the constructor will also inject the 
+        interceptor for handling automatic retries of certain requests 
+        into the AxiosInstance using the axios-retry library.
+        
+    request()
+    
+    get()
+    
+    post()
+    
+    put()
+    
+    delete()
+    
 \end{verbatim}
 \subsubsection{HttpVerbs.ts}
 \begin{verbatim}
-    HttpVerbs.ts
+    Simple enumeration type for defining the HTTP Verbs used in the library.
 \end{verbatim}
 \subsubsection{ErrorWrapper.ts}
 \begin{verbatim}
-    ErrorWrapper.ts
+    Custom Error format shared with the same file in the micro-service. Used to
+    ensure that no important information or context is lost when the errors are
+    handled and passed through the library.
+\end{verbatim}
+\subsection{microservice-client}
+This directory will be where the actual export functionality of the library will be located. It will contain a single file, handling the logic for directing the HTTP requests using the utility functions from the files in the \emph{utils} directory.
+\subsubsection{MicroserviceClient.ts}
+\begin{verbatim}
+    The file defines the MicroserviceClient class. The class contains a member
+    variable importing the Http class and wraps its methods with contextual
+    information about the API endpoints and responses. 
+    
+    constructor()
+    
+    createShoppingItem()
+    
+    getShoppingItems()
+    
+    getShoppingItem()
+    
+    increaseShoppingItemStock()
+    
+    decreaseShoppingItemStock()
+    
 \end{verbatim}
 \subsection{Root Files}
 \subsubsection{Index.ts}
 \begin{verbatim}
-    Index.ts
+    Basic file defining the functions that the library will expose as exports.
 \end{verbatim}
+\subsection{Building and Publishing the Library}
+    Physically publishing the package is out of scope of the project, but I will explain how it would be done.
 
+    Creating and publishing NPM modules is simple. The package.json files specifies a number of fields including name of the package, current version of the module as well as information about its git repository. Once the index file has been defined and the export members specified, the module can be published using the NPM or Yarn package managers.
+    
+    The module will then be stored on the module registry and can then be imported using a package manager. 
+    
 \section{Modifying the OpenAPI Code Generator}
-\subsection{Generating the base client}
-Commands - output -> not much to say really
+\subsection{Generating the Client using the Base Templates}
+In order to generate the Client I will use the openapi-generator-cli NPM package. This means that I do not have to fork and run the whole software stock locally until I have to.
+
+Once the OpenAPI Specification has been created, the Client can be generated through simply running the command:
+\begin{verbatim}
+    openapi-generator-cli generate 
+    -g typescript-axios 
+    -i PATH_TO_SPECIFICATION
+    -o OUTPUT_DIR
+    --additional-properties=npmName=CLIENTNAME,
+\end{verbatim}
+The command will generate a new API client based on the base typescript-axios templates. By passing in the npmName field in as an additional property will cause the package.json files and other related NPM files to be automatically generated. This is necessary for both publication and for installing the libraries dependencies.
 \subsection{Determining the differences between the generated client and my client}
+TODO:
+
 What is there, overlap, missing etc. Talk about overlap of Axios etc, justifies the choice of the option.
 Venn diagram
 \subsection{Modifying the generated client}
+TODO:
+
 Changing the generated code, so changing the output of the command, not the files for templating
 If it works move on, otherwise what should do etc
 \subsection{Modifying the template files}
+TODO:
+
 Pulling the changes made to gen code, forking the generator repo and modifying the mustache template files

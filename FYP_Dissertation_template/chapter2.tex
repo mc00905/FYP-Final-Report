@@ -1,4 +1,5 @@
 \chapter{Literature Review}
+
 \section{Introduction}
 In this chapter I shall give a more in-depth overview of the problem. I will then look at the different areas relating to the project, including analysis of different software and API architectures, best practises for both API and API client designs, as well as how to create this software in Node.js. Additionally I shall look at current code generation tools, specifically relating to API Client and Server generation.
 
@@ -28,11 +29,17 @@ The solution to the problem can be broken down into several parts.
  
 \section{Types of Software Architectures}
 I will be discussing two main forms of software architecture, the traditional Monolithic architecture, and the more contemporary, distributed micro-service architecture .
+
 \subsection{Monolithic Architecture}
+
 Monolithic architecture is the classic way of shipping software. All of the code is stored under one umbrella. Back-end, database and front-end code are all encapsulated as a single unit. The different software components can readily talk to one-another, no API usage between the internal components is needed. 
+
 \subsection{Micro-service Architecture}
+
 Conversely, micro-service architectures break down this monolithic structure into a number of self contained and loosely coupled services, responsible for a single aspect of the applications functionality. These services then communicate with each other, typically through an API, in order to pass information from one part of the system to another.
+
 \subsection{Monolith vs Micro-services}
+
 The two architecture styles each offer advantages and disadvantages when compared with each other. 
 Monolithic code-bases are simple to develop, test, and deploy. You only need to have one code-base stored locally, and you simply need to checkout onto a new branch and start coding to add new functionality. As everything is under one roof, you can have powerful testing suites that cover the entire application, both at a Unit level, but also as End-to-End tests. End-to-End tests are particularly potent as they allow the system to start tests at the UI simulating the end user, ensuring behaviour of the application is expected from start to finish.
 
@@ -45,7 +52,9 @@ Additionally, software following the micro-service architecture can consist of m
 Micro-services are heavily scalable, and if certain parts of the overall system need more resources or implementations of things such as load balancers, then those specific micro-services can be targeted. In monoliths, resources need to be added to the entire system as a whole. Failures within micro-service architectures are oftentimes handled more gracefully. If an error or a failure happens in one service, then it is isolated, especially in the cases of more technical issues such as memory leaks. However networking problems and errors can cause issues with micro-services, primarily by interrupting communication between them. If a services communication channels are knocked out, then that entire functionality is knocked out until the issue is resolved.
 
 Overall, there are use cases for both architectural styles. Monoliths work very well for smaller code-bases, but as soon as the application grows and becomes cumbersome, more scalable micro-services are typically a better bet.
+
 \section{RESTful API Architecture}
+
 REST is an acronym for Representation State Transfer. REST follows the client-server architectural paradigm and is stateless, the client and server do not need to know about the others state. This paradigm allows different clients, all implemented differently, to interact with the same server, in the same way, and receive the same responses. Changes made to the clients have no bearing on the server whatsoever.
 
 Information in a RESTful API is abstracted out as a Resource. State is the information stored under the resource. When a client makes a request to the server, the format of the response, I.e. the Representation of the data, is specified and the data is returned in that format. Essentially RESTful APIs work by getting the client to describe exactly what they want, and how they want to receive it.
@@ -87,7 +96,9 @@ This URL requests a list of all public repositories in which the authorised user
 \end{enumerate}
 
 One important note about REST is that it is not a formal protocol, and is instead a set of more loose guidelines. 
+
 \section{Alternatives to REST APIs}
+
 \subsection{SOAP APIs}
 Simple Objects Access Protocol is an XML based messaging protocol. Compared to REST it is far more verbose and rigid. SOAP is typically used by financial institutions, it's rigid nature is ideal for usecases where security is  a priority. For general usage SOAP requests and responses contain vast swathes of bloat, which in turn slows down communication. With SOAP you are also locked into using XML, which compared to more contemporary approaches like JSON, is less user-friendly and far less human-readable.
 
@@ -125,7 +136,7 @@ TODO:
 
 TODO:
 
-\subsection{Well Formatted and Designed URL endpoints}
+\subsection{Well Formatted and Designed URL Endpoints}
 
 TODO:
 

@@ -2,33 +2,32 @@
 
 \section{Introduction}
 In this section I will explore the actual requirements that the project aims to meet. The functionality of the end products will be specified creating tangible goals that can be tested against.
+
 \section{Requirement Gathering}
 No formal requirements gathering will take place, instead requirements will be pulled out of my last three years creating and working with the micro-services and their APIs at Hindsight Software. Essentially I will draw on my employment as a case study, and look to solve the issues we have encountered during our work.
 
-\subsection{The Overall Goals of the Project}
-
-\subsubsection{Speeding up the development of RESTful Node.js micro-services with the OpenAPI Specification}
+\subsection{Speeding up the Development of RESTful Node.js Micro-services with the OpenAPI Specification}
 During development of an application, the bulk of development time should be spent building and testing the logic for the end behaviour of the program, not on the configuration and frameworks used. Choosing the right tools and libraries to allow development of new micro-services to be as fast and fluid as possible is crucial to the longevity and extensibility of the application.
 
 The first part of the project will involve building a RESTful micro-service using a collection of tools aiming to fulfil these criteria that we can use as a template for future micro-services at Hindsight. Additionally, facilities for features such as API parameter and payload validation, rate limiting of endpoints and support for documentation must be included. There must also be functionality supporting exporting an OpenAPI Specification representing the micro-services API. This specification will be used to generate API clients using the OpenAPI Generator tool later.
 
 The micro-service designed will be simple, fundamentally acting simply as a test-bed and exemplar project for the libraries used, but will include all standard functionality expected for a modern application, including use of a database system.
 
-\subsubsection{Creating a reliable template TypeScript API client with built in handling of common errors and API response/request types }
+\subsection{Creating a Reliable Template TypeScript API Client }
 Once the API for the micro-service has been created, I will look at creating a custom API client consuming it. The aim of this client here is to produce a client library for the micro-service API that any number of other services can install and use to communicate with the target micro-service.
 
 The client library will need to facilitate automatic retry mechanisms on certain failed requests, support the use of query parameters for filtering and sorting of results as well as exposing the details of request and response bodies as TypeScript types to the library user.
 
 The library must also be easily imported into other Node.js micro-services so that the other services can readily consume the API exposed by the client.
 
-\subsubsection{Injecting the new API client functionality into auto-generated API clients from the OpenAPI Generator}
-
+\subsection{Injecting the new API Client Functionality into Auto-generated API Clients from the OpenAPI Generator}
 The final aim goal of the project is to automatically generate client libraries fulfilling the above criteria using the OpenAPI Generator. The tool provides options for a number of different styles of clients, each utilising different technology stacks and frameworks, and so the first job will be determining which of the offerings is the best fit. From there I will compare the functionality against the selected option and my custom client, and then look at adding any missing pieces into the template files used during generation.
 
 \subsection{Summary}
 The overarching goal of the project as a whole is to create a suite of tools that speeds up and make development of a collection of RESTful micro-services easier. Generating clients automatically from API specifications allows all of the inter-micro-service communication to be modularised, allowing micro-services to import the client library for each service that they wish to communicate with. As the APIs of a micro-service is updated and a new endpoint is added, a new API specification will be created in turn creating a new version of the client library through the code generation tool. The library will then be published allowing all services using it as a dependency to have access to the endpoint as soon as it goes live.
 
 \section{System Requirements}
+
 \subsection{Node.js micro-service \& its API}
 \begin{enumerate}
     \item \textbf{Use well-formed URLs}: The URLs used for the API should follow best practises. Nouns should be used within the URL paths and plurals should be used for all resources. 
@@ -61,6 +60,7 @@ The overarching goal of the project as a whole is to create a suite of tools tha
 \end{enumerate}
 
 \section{Software Development Life-cycle Methodology}
+
 \subsection{Agile and Kanban}
 
 TODO: need to work out what to write here etc....
