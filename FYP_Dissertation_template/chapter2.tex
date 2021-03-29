@@ -98,7 +98,6 @@ This URL requests a list of all public repositories in which the authorised user
 One important note about REST is that it is not a formal protocol, and is instead a set of more loose guidelines. 
 
 \section{Alternatives to REST APIs}
-
 \subsection{SOAP APIs}
 Simple Objects Access Protocol is an XML based messaging protocol. Compared to REST it is far more verbose and rigid. SOAP is typically used by financial institutions, it's rigid nature is ideal for usecases where security is  a priority. For general usage SOAP requests and responses contain vast swathes of bloat, which in turn slows down communication. With SOAP you are also locked into using XML, which compared to more contemporary approaches like JSON, is less user-friendly and far less human-readable.
 
@@ -108,7 +107,7 @@ All of this reduces the viability of SOAP for use in micro-service APIs, the ove
 GraphQL is a contemporary data query language developed by Facebook. With GraphQL a single endpoint is provided, and clients request the specific information that they required. Whereas REST endpoints provide concrete response bodies for request, GraphQL returns only the information requested. This makes GraphQL a lot more lightweight than RESTful APIs, no redundant information is requested or sent.
 
 The downside with GraphQL is it has set to see widespread standardisation or adoptions. Far more tools and solutions support REST, however over the next few years we might see a shift away from REST and towards GraphQL. 
-
+\subsection{Comparison: TODO: insert image payloads}
 \section{RESTful API Documentation \& Specification}
 \subsection{Documentation}
 API documentation guides the end-user on how the API is to be used. It tells a developer how each endpoint interacts, from how the client should format a request, as well as describing the responses provided by the server.
@@ -125,25 +124,61 @@ Documentation should always be kept up to date, and updated as the API itself is
 \subsection{Specification}
 Where documentation is meant to be a human-readable explanation of an API, API specifications describe how the API behaves and interacts, and is typically written in specific specification languages. Oftentimes the specifications are transformed into machine-readable API definitions and used in creation of API servers, handling response and requests as specified, alongside adding layers of validation across the API.
 
-\section{REST API Best Practises}
+\section{RESTful API Best Practises}
 \subsection{Correct Assignment of HTTP Status Codes}
-TODO:
+RESTful APIs involve communication between two parties, a server and a client. A client will typically make a request to a server, and HTTP status codes allow the server to provide a quick summary of whether the request was successful, and if not, what went wrong.
+
+HTTP status codes are three digit numbers that are groups into five main categories.
+\begin{itemize}
+    \item Information Response: These status codes occupy the 1xx band of numbers, such as 100 and 101. These status codes are typically used to communicate to the client that the request was successfully received, but more processing is to be done on it.
+    \item Success Response: The success responses indicate to the client that the request is complete and successful, and cover the 2xx number range. The typical responses are the 200 and 201 status codes, with the former typically used in conjunction with a response body and the latter without, but there are a number of other response codes covering other use cases.
+    \item Redirection Response: Covering the 3xx numbers, these status codes inform the client that some additional action must be taken in order to complete the request. Typically this involves redirection of the request to a different URL.
+    \item Client Error Response: 4xx status codes are used to tell the client that some part of the request provided by them is incorrect or unexpected. Typical status codes for this category include the 400 Bad Request code informing the client that some part of the request body or URL is incorrect, the 401 Unauthorized code which tells the user that they have not yet provided authentication to access the request and the 404 status code which informs the user that the request resource does not exist.
+    \item Server Error Response: These status codes cover the 5xx series, and are used when some part of the request fails on the servers side. Where 4xx status codes are somewhat expected, 5xx codes typically involve unexpected crashes or exceptions. The 500 Internal Server Error code typically covers most use cases, but more specialised codes for things like Bad Gateways are also used. 
+\end{itemize}
 
 \subsection{Rate Limiting}
-TODO:
+Modern REST APIs can be potentially consumed by many thousands of potential clients. This can produce a great deal of strain on the the host server, especially if requests are concentrated in a tight time-frame. Rate limiting aims to help alleviate this issue by essentially throttling the throughput of requests made at any one time or time-period.
 
+Typically requests will be associated with a specific user, either through tying in the IP address the request originated, or through any authenticated user information if the API requires it. A set volume of requests that the server allows over a period of time is specified, and that individuals request number is tracked and incremented as more requests are made. If the limit is exceeded, the user will be temporarily locked out of making any more requests to the API until after the time period has ended. A 429 status code is typically sent by the server to inform the client of this breach of the rate limits alongside information about when the lockout ends.
+
+Rate limits also have the added benefit of helping to protect against more malicious Denial of Service attacks through the same principles.
 \subsection{Pagination of Large Results}
+RESTful APIs allow access to huge swathes of data. In order to illustrate the point we will look at the following Bitbucket API endpoint:
+\begin{verbatim}
+    https://api.bitbucket.org/2.0/repositories
+\end{verbatim}
+This endpoint provides a list of every public repository that exists in Bitbucket. There are hundreds of thousands of repositories stored and if the response were to contain all of the information in  single payload, it would be vastly too large.
 
-TODO:
+Pagination allows us to break down large sets of data into more manageable chunks called pages. Pages have a length specified which acts as an upper bound for how many entries each page can contain. Rather than returning all of the data at once, the API will instead return a page, alongside some meta-data informing the client about current page number, as well as information relating to the total number of pages. Some implementations of pagination also contain links to the first, previous and next page but this differs across different APIs.
 
+Pages as well as page size can typically be specified through use of query parameters on the endpoint, and when tied in with the page number, and total pages meta-data a client can move over the pages like they would a book.
 \subsection{Well Formatted and Designed URL Endpoints}
-
-TODO:
-
+In order for an API to be easy to use and navigate it must conform to certain best practises and standards, with the key ones  being specified below.
+\subsubsection{Using Nouns for all Resources}
+RESTful APIs are resource-based, and each of these resources should be named using nouns rather than verbs. The key premise for this is that a resource is representing a thing, the very definition of a noun. The API is used to fetch the properties of these resources and using a verb to describe the resources does not make sense.
+\subsubsection{Using Plurals for Resources}
+APIs typically contain many different individuals of each resource type and so the resource name should be formatted in its plural form to properly convey this.
+\subsubsection{Using Identifiers for Individual Resources}
+While the resources will be pluralised, individuals of this chosen resource type should be able to be fetched through use of an identifier. Choosing the identifier carefully is important as the request should be idempotent, that is every time the same identifier is used, the same resource is used.
 \subsection{Semantic Versioning of APIs}
+Over time REST APIs will change and evolve. APIs acts as a dependency for many different pieces of software and if the response bodies or URL endpoints change many of these integration can break, stopping functionality within this software from working.
 
-TODO:
+Semantic versioning is the principle of breaking changes into three distinct categories.
+\begin{itemize}
+    \item Major: These are the big sweeping changes, any changes that will break or change the fundamental workings of the API will fall under this category. An example of this would be the removal of existing fields within the responses from the API.
+    \item Minor: These changes can changes functionality, but in a backwards compatible way. These could be the addition of new optional fields such that existing data can still be used. 
+    \item Patch: These changes are typically bug fixes, again completely backwards compatible.
+\end{itemize}
+These API versions are typically represented in the format X.Y.Z where X represents the Major version, Y the Minor and Z the Patch version such that the version 1.2.1 will be the first Major, with two Minor version increments and one Patch version increment on the current Minor version.
 
+For the most part as the Minor and Patch versions are backwards compatible, we do not have to deal with them outside of documentation tracking the changes. Major versions with their breaking changes are the key issue.
+
+The standard way of handling Major versions is by including the version number within the path of the URL endpoint that the API exposes. If we look back at the Bitbucket repositories endpoint we can see this:
+\begin{verbatim}
+    https://api.bitbucket.org/2.0/repositories
+\end{verbatim}
+After the base URL the number 2.0 is specified. This identifies the seconds major version of the API is to be used. As long as each major version is documented adequately, users should be able to consume any of the versions or all of versions without ever dealing with breaking changes. Any big changes will simply involve creating a new endpoint with an incremented version number within the path and all of the existing calls to the old endpoints will be unchanged.
 \subsection{Query Parameters for Filtering and Sorting}
 TODO:
 \section{Conclusion}

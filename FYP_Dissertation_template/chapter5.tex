@@ -1,14 +1,15 @@
 \chapter{System Design}
 \section{Introduction}
+
 In this section of the report I will explain and justify the design decisions I have made relating to both the architecture of my systems, and the libraries they employ.
 
-The project is going to consist of three differing systems. The first will be a Node.js TypeScript RESTful micro-service. It will be a pretty basic service, fulfilling the basic functionality expected of a modern micro-service. The second will be a TypeScript NPM module, acting as a client library that consumes the API of the micro-service and allows the Node.js service that imports the module to access the API. The final part of the project is a number of modifications made to the OpenAPI Generator typescript-axios templates. These changes will add any missing functionality to the generated client, using my NPM module as a baseline.
+The project is going to consist of three differing systems. The first will be an exemplar Node.js TypeScript RESTful micro-service, developed to showcase techniques to develop the services in general.  It will be a pretty basic service, fulfilling the basic functionality expected of a modern micro-service. The second will be a TypeScript NPM module, acting as a client library that consumes the API of the micro-service and allows the Node.js service that imports the module to access the API. The final part of the project is a number of modifications made to the OpenAPI Generator typescript-axios templates. These changes will add any missing functionality to the generated client, using my NPM module as a baseline.
 
 \subsection{Client-Server API Interactions}
 
 The foundation of the project is in the interactions between micro-services. Each individual micro-service will utilise a RESTful API to expose its functionality to other services within the application through the use of HTTP requests. This follows the typical Client-Server model, where the service making the request acts as the client, and the owner of the API being requested acts as the server. Any number of micro-services can make requests to any of the APIs within the overarching application and so the system design needs to facilitate this in a scalable way.
 
-INSERT API - API CLIENT DIAGRAM HERE
+TODO: INSERT API - API CLIENT DIAGRAM HERE
 
 The end goal of the project is to provide the ability for all micro-services in a distributed application to produce an API client for their APIs that the other services can use without any client related code needing to be written. This will allow more development time to be put into the actual application logic of the system, reduce duplicated code across multiple services and provide a communication platform that is robust and reliable. 
 
@@ -228,6 +229,10 @@ The base of my handmade REST Client is the Axios HTTP library, and so utilising 
 The generated client is also setup as an NPM package, and so fulfils my concerns around easily importing and using the client in Node.js services. As a baseline, the generated code only has TypeScript and Axios as dependencies and therefore has no deprecated libraries in use. This should make it a fairly stable option longterm as Axios and TypeScript are both likely to stick around. 
 \section{Microservice}
 The micro-service is a Express based Node.js service broken down into a three layer architecture: the \emph{data-layer}, \emph{middleware} and \emph{service-layer}.
+
+TODO: we model as a 3 layer.. This will be illustrated using the Shopping microservice as an exemplar
+
+TODO: talk in general context - talk about services in general not this specific micro-service
 \subsection{data-layer}
 This layer will handle all of the business logic of the service, namely interacting with the database in order to fetch the information sent and requested through the API.
 \subsubsection{models/ShoppingItemModel.ts}

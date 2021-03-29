@@ -1,10 +1,12 @@
 \chapter{Testing and Evaluation}
 \section{Introduction}
+
 This section will detail my plans on how I will test my solutions, and how I will determine how they have measured up against the specifications defined for them.
 
 There will be two main testing approaches throughout the project, individual Unit Testing on different components of the software, and more end-user oriented end-to-end testing where I will be actual using the functionality and deeming it functional. 
 \section{Unit Testing with SuperTest, Jest and Nock}
-My Unit Tests for both the micro-service and the client will use a number of key libraries, SuperTest, Jest and Nock.
+
+My Unit Tests for both the micro-service and the client will use a number of key libraries, SuperTest, Jest and Nock. Whilst they will test the sample services I have created, the main aim will be to produce a suite of tools for general micro-service testing.
 \subsection{SupertTest}
 SuperTest is a Node.js library used for testing HTTP. By passing in the server export from the App.ts we can perform Unit Tests on the actual HTTP requests made through the server.
 

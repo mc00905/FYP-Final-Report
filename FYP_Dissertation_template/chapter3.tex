@@ -3,6 +3,8 @@
 \section{Introduction}
 In this section I will explore the actual requirements that the project aims to meet. The functionality of the end products will be specified creating tangible goals that can be tested against.
 
+As previously stated, a lot of this project will be based on my experience at Hindsight migrating from a Java based monolithic architecture, to a collection of Node.js micro-services. I will look at the problems I have hit during this migration and potential ways of resolving them.
+
 \section{Requirement Gathering}
 No formal requirements gathering will take place, instead requirements will be pulled out of my last three years creating and working with the micro-services and their APIs at Hindsight Software. Essentially I will draw on my employment as a case study, and look to solve the issues we have encountered during our work.
 
@@ -24,7 +26,7 @@ The library must also be easily imported into other Node.js micro-services so th
 The final aim goal of the project is to automatically generate client libraries fulfilling the above criteria using the OpenAPI Generator. The tool provides options for a number of different styles of clients, each utilising different technology stacks and frameworks, and so the first job will be determining which of the offerings is the best fit. From there I will compare the functionality against the selected option and my custom client, and then look at adding any missing pieces into the template files used during generation.
 
 \subsection{Summary}
-The overarching goal of the project as a whole is to create a suite of tools that speeds up and make development of a collection of RESTful micro-services easier. Generating clients automatically from API specifications allows all of the inter-micro-service communication to be modularised, allowing micro-services to import the client library for each service that they wish to communicate with. As the APIs of a micro-service is updated and a new endpoint is added, a new API specification will be created in turn creating a new version of the client library through the code generation tool. The library will then be published allowing all services using it as a dependency to have access to the endpoint as soon as it goes live.
+The overarching goal of the project as a whole is to create a suite of tools that speeds up and make development of a collection of RESTful micro-services easier. Generating clients automatically from API specifications allows all of the inter-micro-service communication to be modularised, allowing micro-services to import the client library for each service that they wish to communicate with. As the APIs of a micro-service is updlated and a new endpoint is added, a new API specification will be created in turn creating a new version of the client library through the code generation tool. The library will then be published allowing all services using it as a dependency to have access to the endpoint as soon as it goes live.
 
 \section{System Requirements}
 
@@ -63,7 +65,23 @@ The overarching goal of the project as a whole is to create a suite of tools tha
 
 \subsection{Agile and Kanban}
 
-TODO: need to work out what to write here etc....
+I will be employing an Agile way of working through the software development process, in particular loosely basing my methodology on the Kanban framework.
+
+Essentially the development process will be split into a number of different chunks, which can be transitioned through a number of different stages of development.
+
+The stages of development I will use will be \textbf{Designing}, \textbf{In Production}, \textbf{Testing} and\textbf{Ready}.
+
+\textbf{Designing} will cover the intial design stages, from overall system architecture to RESTful API design.
+
+\textbf{In Production} will encapsulate all the actual writing of the code, getting base functionality working.
+
+\textbf{Testing} will involve both User-based Testing and Unit Testing the code, from using the systems end to end to actually writing the Unit Tests and ensuring test coverage is adequate.
+
+\textbf{Ready} will simply show that the component is in its final, complete form.
+
+In order to track the stages each piece of work is in, I will use a Jira project with a Kanban board, breaking the components into Jira Issues which can be transition individually through my pipeline.
+
+TODO: insert Jira screenshot with dummy project. Haven't actually created the project or anything, but can make an actual setup for it
 
 \section{Conclusion}
 In this chapter I have looked at the overall goals that my project aims to fulfils, as well as the individual requirements for each of the software components and I have detailed my plans to use the Kanban Agile Framework during development of the various solutions.
