@@ -545,15 +545,48 @@ The \emph{utils} directory will store the more abstract functionality, the metho
         into the AxiosInstance using the axios-retry library.
         
     request()
-    
+        Generic wrapper for the AxiosInstance.request() method. Injects a 
+        custom error handler into the the response for the request() method 
+        to insure all of the relevant error information from the API is 
+        pulled out before being parsed as an ErrorWrapper object.
+        
+        The method signature allows inputting of the HTTP verb to be
+        used, the URL endpoint to be requested as well as optional 
+        fields for request body and query parameters.
+        
+        A switch statement is used based on the HTTP verb to determine
+        how the request is going to be sent, and what parts of the request
+        will be provided.
+        
+        Subsequent wrappers will be provided for this generic function
+        each providing specific HTTP verb support.
+        
     get()
     
+        Wrapper for the request() method which injects the HTTP verb GET 
+        into the method. Method signature provides a required parameter
+        URL which will also be passed into the request() method when called.
+        Optional parameters for query parameters also provided.
+    
     post()
+        
+        This wrapper injects in the HTTP verb POST and contains required
+        parameters for both URL and the request body, both of which are
+        passed in the request() method.
+        Optional parameters for query parameters also provided.
     
     put()
     
-    delete()
+        This wrapper injects in the HTTP verb PUT and contains required
+        parameters for both URL and the request body, both of which are
+        passed in the request() method.
+        Optional parameters for query parameters also provided.
     
+    delete()
+        
+        Wrapper which injects the HTTP verb delete into the request()
+        method alongside a URL, request body and optional query parameters.
+        
 \end{verbatim}
 \subsubsection{HttpVerbs.ts}
 \begin{verbatim}
@@ -584,6 +617,8 @@ This directory will be where the actual export functionality of the library will
     increaseShoppingItemStock()
     
     decreaseShoppingItemStock()
+    
+    deleteShoppingItem()
     
 \end{verbatim}
 \subsection{Root Files}

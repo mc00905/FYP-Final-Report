@@ -1,7 +1,7 @@
 \chapter{Literature Review}
 
 \section{Introduction}
-In this chapter I shall give a more in-depth overview of the problem. I will then look at the different areas relating to the project, including analysis of different software and API architectures, best practises for both API and API client designs, as well as how to create this software in Node.js. Additionally I shall look at current code generation tools, specifically relating to API Client and Server generation.
+In this chapter I shall give a more in-depth overview of the problem. I will then look at the different areas relating to the project, including analysis of different software and API architectures, best practises for API design as well as looking at documentation and specifications for APIs.
 
 \section{The Problem: Communication between micro-services}
 
@@ -180,5 +180,8 @@ The standard way of handling Major versions is by including the version number w
 \end{verbatim}
 After the base URL the number 2.0 is specified. This identifies the seconds major version of the API is to be used. As long as each major version is documented adequately, users should be able to consume any of the versions or all of versions without ever dealing with breaking changes. Any big changes will simply involve creating a new endpoint with an incremented version number within the path and all of the existing calls to the old endpoints will be unchanged.
 \subsection{Query Parameters for Filtering and Sorting}
-TODO:
+Falling under the same vein as pagination, the large datasets that RESTful APIs often provide typically need to provide support for filtering and sorting the results into subsets. The most common way of injecting this support into APIs is through optional query parameters.
+
+These query parameters are appended to the end of the URL endpoint and allow different fields filters and sorting parameters to be passed into the server affecting the results returned to be tweaked on demand by the client.
 \section{Conclusion}
+In this chapter I have looked at the different aspects of the problem area, primarily looking at the difference between micro-services and monoliths, different types of APIs before focusing more in-depth on RESTful APIs.
