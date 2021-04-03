@@ -29,10 +29,21 @@ It should be noted that Code Coverage and Test Coverage are different. Where Cod
 
 For this project I will only be testing Code Coverage as the bulk of my physical tests will be Unit Tests.
 \subsection{Nock}
-Using the library for creating intercepting mock http requests - can show rate limiting handling works etc
+Nock is a Node.js library used for mocking HTTP requests. Nock intercepts the HTTP requests sent by the server or application, and rather than actually forwarding the error to the destination it returns a static response body or error defined by the developer. 
+
+It is particularly useful for interacting with external APIs as it mimics the request sent by the consuming service without actually interacting within the API. This allows the unit tests to be run without connecting to the internet or running any of the dependencies of the service being tested locally. 
+
+Nock allows creation of highly configurable mocks and every component of the requests and responses can be tweaked. This includes everything from headers to status codes.
+
+Once a request is intercepted the mock is consumed. This allows different instances of the exact same request to return different responses. This is particularly useful for testing things like rate limit handling, as the first few requests which are limited will fail with a 429 status code, but subsequent requests that are not limited will return successfully.
+
+All of the unit tests for my API Client will make use of Nock so that it can be tested in isolation from the micro-service.
 \subsection{Unit Testing the Micro-service}
+The testing of the micro-service will be broken down into two key sections, testing that the controllers work and respond as expected, and that the data-agents process the data correctly.
 \subsubsection{Testing the Controllers}
-supertest library - call controller endpoints - does response.toEqual expected type etc
+In order to test the controllers and the REST API exposed through them I will make use of the SuperTest library. SuperTest allows programmatic HTTP requests to be made to the server within the unit tests, allowing testing of the same URL endpoints that the live API will expose.
+
+Upon calling the HTTP requests I will use Jest assertions to verify that the fields returned within the response are correct. To do this I will have to create static response bodies for each of the requests that I wish to test and compare them against those actually returned by the request. If the fields match those expected, then the API is working as expected.
 \subsubsection{Testing the Data Agents \& Models}
 dummy db - locolhost/test.. call agents, do the methods pass etc. Startup/Tear down db before/after tests. Can a posted object be retrieved, stuff deleted etc. 
 \subsection{Unit Testing the Handcrafted Client}
