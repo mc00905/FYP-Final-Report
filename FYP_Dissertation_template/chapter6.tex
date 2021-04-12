@@ -3,6 +3,8 @@
 
 This section will detail my plans on how I will test my solutions, and how I will determine how they have measured up against the specifications defined for them.
 
+TODO: emphasis on the framework, not the example usage of the framework. How to test the framework with these pieces as an example
+
 There will be two main testing approaches throughout the project, individual Unit Testing on different components of the software, and more end-user oriented end-to-end testing where I will be actual using the functionality and deeming it functional. 
 \section{Unit Testing with SuperTest, Jest and Nock}
 
@@ -38,8 +40,10 @@ Nock allows creation of highly configurable mocks and every component of the req
 Once a request is intercepted the mock is consumed. This allows different instances of the exact same request to return different responses. This is particularly useful for testing things like rate limit handling, as the first few requests which are limited will fail with a 429 status code, but subsequent requests that are not limited will return successfully.
 
 All of the unit tests for my API Client will make use of Nock so that it can be tested in isolation from the micro-service.
+\subsection{Code Coverage Target}
+Oftentimes it can be extremely challenging to hit one hundred percent code coverage. While I will aim to hit as close to complete coverage as possible, I will be aiming for a minimum of eighty five percent of overall code coverage for both the client and micro-service. There are likely to be certain parts of the code that aren't feasible to reach during unit-testing, particularly around handling of unexpected failures around the database connections.
 \subsection{Unit Testing the Micro-service}
-The testing of the micro-service will be broken down into two key sections, testing that the controllers work and respond as expected, and that the data-agents process the data correctly.
+The testing of the micro-service will be broken down into two key sections, testing that the controllers work and respond as expected, and that the data-agents process and store the data correctly.
 \subsubsection{Testing the Controllers}
 In order to test the controllers and the REST API exposed through them I will make use of the SuperTest library. SuperTest allows programmatic HTTP requests to be made to the server within the unit tests, allowing testing of the same URL endpoints that the live API will expose.
 
@@ -47,20 +51,87 @@ Upon calling the HTTP requests I will use Jest assertions to verify that the fie
 
 Each of the URL endpoints within the micro-service will have a small suite of unit tests written for them. Requests that should trigger successful responses will be validated as will as requests that should trigger expected errors, such as doing GET requests on resources that do not exist. The HTTP status codes will be tested, ensuring that they are being assigned correctly and any response or error bodies will also be checked to ensure that they contain all of the content that they should. Essentially any documented request and response for the API should be tested.
 \subsubsection{Testing the Data Agents \& Models}
-Testing the data-agents and models involves interacting with the actual database operations. We do not want our unit tests ever interacting with live data and so standard practise is to connect to a completely separate test-focussed database. This is easy to do with Mongoose, and we can simple create a new database connection as part of the unit tests. Once the database connection is defined we can simple inject a number of test documents into the collections to act as our test data.
+Testing the data-agents and models involves interacting with the actual database operations. We do not want our unit tests ever interacting with live data and so standard practise is to connect to a completely separate test-focused database. This is easy to do with Mongoose, and we can simple create a new database connection as part of the unit tests. Once the database connection is defined we can simple inject a number of test documents into the collections to act as our test data.
 
 A small sample of test documents will be created upon the start up of the unit tests and saved into the test database. Different values for each of the model fields will be used across the suite of documents. This will allow tests to be written that verify that the correct subset of the collection is returned for the different filtering and sorting options on the data-agent methods.
 
 Each of the operation involved in fetching existing documents will utilise the test documents created upon database startup. This will allow assertions to be run against the actual document definitions reducing boilerplate and keeping the unit tests lightweight. However, for the operations involving modifying or creating documents the tests will consist of two stages. The first will be defining the parameters used for the creation or modification or the resource, as well as creating a JSON representation of the resource after the operation has been defined. The method can then be called assertions can be tested to ensure that the operation did not fail. In order to test that the actual data saved is what is expected, a second request fetching the new data needs to be made. This can be done directly through the mongoose model using the primary key used in the create or modify operation, and the response can be tested against the previously defined JSON object. This two-stage process ensures that not only does the operation not fail, the actual information stored in database is exactly what is expected.
 \subsection{Unit Testing the Handcrafted Client}
+Testing the client will involve using Nock to intercept and mock the responses of all the outgoing requests that the client sends out. These will simulate both successful and failed requests and allow all expected cases to be tested against.
 \subsubsection{Intercepting HTTP Requests to the micro-service with Nock}
-How do nock + jest tie together
-testing each method - does it pull out the responses, handle Errror and rate limiting
+There are a number of different behavioural aspects that need to be tested within the client. The successful responses need to be properly handled and parsed into objects that are expected, any errors thrown by the API need to be caught and handled without losing any crucial information and certain failed requests need to be retried automatically.
+
+Testing handling of sucessful responses is easy with Nock. The endpoint simply need to passed into the Nock constructor before calling the \textit{.reply()} method with both the status code and response body that the mocked request should return. An example can be seen below.
+\begin{verbatim}
+    const request = Nock('http://localhost:3000/REST/1.0')
+    .get('/shoppingItems') 
+    .reply(200,
+        {
+            page: 1,
+            totalPages: 1,
+            shoppingItems: [{
+                "name":"apple",
+                "category":"Fruit",
+                "numberOfStock":110,
+                "inStock":true
+            }]
+        })
+    const res = await client.getShoppingItems();
+\end{verbatim}
+The above code simply initialises a new variable \textit{request} and assigns it to the request made to the \textit{"/shoppingItems"} endpoints. The spoofed response is assigned the status code 200, imitating a successful operation, and an example of the correct response payload is also injected in. The \textit{getShoppingItems()} can then be called. As far as the methods calling the endpoints are concerned they will have interacted with what they believe to be the live API, but behind the scenes the request will have been intercepted and replaced with the Nock. The consuming code will then treat the faked response the same as a legitimate one and the outputs of the methods can be asserted against to check that they are working correctly.
+
+Failed requests can be built and used in the exact same way. A status code and an error payload just need to be assigned to the Nock request to endpoint and it's good to go.
+\begin{verbatim}
+    const failedRequest = Nock('http://localhost:3000/REST/1.0')
+    .get('/shoppingItems/mango')
+    .reply(404, 
+        {
+            "errorIdentifier": "ShoppingItemNotFound",
+            "message": "Shopping Item not found with params: 
+                {
+                    \"name\":\"mango\"
+                }"
+        })
+    const res = await client.getShoppingItem('mango');
+\end{verbatim}
+The code above simply creates a Nock imitating a request made for a resource that does not exist. The method that consumes the request is expected to throw an instance of the \textit{ErrorWrapper} object using the data from the error payload and status code. The unit tests for the failed requests will test that the expected object is thrown and that it contains the fields and values that are expected. This is easily done through simple assertions on the object properties within the unit tests.
+
+Once a request has been intercepted and assigned a matching Nock, the Nock is consumed. Any subsequent requests will need to have separate Nock objects assigned to them. This allows the automatic retry facilities of the client to be tested quite easily. The rate limit retry system works by making the first request, checking the status code returned in the case of an error and if supported, a number of retries of the same request will be made with incremental delays between them. Essentially a successful retry system will contain a number of failed requests, followed by a final successful request. With Nock we can define all of these requests and the system should handle them as if they were interacting with an actual rate-limited API. An example for testing a request made successfully after three retries is given below.
+\begin{verbatim}
+    const failThrice = Nock('http://localhost:3000/REST/1.0')
+    .get('/shoppingItems')
+    .times(3)
+    .reply(429)
+    const retriedSuccessRequest = Nock('http://localhost:3000/REST/1.0')
+    .get('/shoppingItems') 
+    .reply(200,
+        {
+            page: 1,
+            totalPages: 1,
+            shoppingItems: [{
+                "name":"apple",
+                "category":"Fruit",
+                "numberOfStock":110,
+                "inStock":true
+            }]
+        })
+    const res = await client.getShoppingItems();
+\end{verbatim}
+There are two Nocks defined above. The first behaves the same as the previous spoofed errors with one exception, it has the additional \textit{.times()} function call attached. All this does it tell Nock that the request should exist three times. This means that when the axios-retry library makes retries the request after the initial failure, it will receive two subsequent rate-limited errors. 
+
+The second Nock is a typical successful mocked response for the same endpoint. When the retry is triggered a third and final time this response will be returned. When the \textit{getShoppingItems()} method is called the output should contain the information provided by the final success. As with the previous tests this can be tested by simple asserting the fields provided in the response body outputted by the method.
 \section{End-to-End Testing the Auto-generated Client}
-\subsection{Calling the Micro-service Endpoints}
-Actually press the buttons, use ts-node to call an index file with function calls. 
-Does the generated code work - call endpoints correctly. Does typescript pick up the typings. Do the added features work
+\subsection{Migrating the Unit Tests from my Client}
+In order to test the auto-generated client I will pull out the unit tests from my client, and copy them across into the generated clients. The tests will require light modification in order to call the different methods but all of the Nock descriptions and assertions on the responses should be transferable.
+
+The clients package.json file will also need some additional libraries to be imported in order for the testing to work, however this will have no bearing on the actual functionality of the client.
+\section{Results of the Tests}
+Thinking about using screenshots of test coverage etc. not sure if this sections is needed or if is encapsulated under the objectives bit, at its core unit-tests just prove functionality work which is specified by the objs? Interested in your thoughts on that
+\subsection{The Micro-service}
+\subsection{The Handcrafted Client}
+\subsection{The Auto-generated Client}
 \section{Back to the Objectives}
+Not sure on best way to justify all of this stuff? Just give my reasoning, reference unit-tests and usability testing etc? At surface level everything I've actually finished so far has met all reqs (see client + micro-service) Still need to do last little bits of the auto-gen stuff around template files etc. 
 \subsection{The Micro-service}
 \subsection{The Handcrafted Client}
 \subsection{The Auto-generated Client}
