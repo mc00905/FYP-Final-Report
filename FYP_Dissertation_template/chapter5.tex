@@ -14,7 +14,7 @@ TODO: INSERT API - API CLIENT DIAGRAM HERE
 The end goal of the project is to provide the ability for all micro-services in a distributed application to produce an API client for their APIs that the other services can use without any client related code needing to be written. This will allow more development time to be put into the actual application logic of the system, reduce duplicated code across multiple services and provide a communication platform that is robust and reliable. 
 
 \section{Premise of the micro-service}
-The micro-service will be a fairly basic piece of software, aiming simply to provide the basic functionality required. As such the service will simulate a simple Stock Control component that could be used by a supermarket. It will be connected to a simple back-end database, and allow different products to be added, updated and deleted from the system. 
+The aim of the project is to provide a framework of tools for creating services in general and not any particular service. The micro-service created as part of the project will be a simple example showcasing the interactions between the tools and how they are used, the actual business logic of the system having no real bearing on the project itself. The service will simulate a simple Stock Control component that could be used by any sort of supermarket or shopping application. This should allow me to demonstrate all I need to without getting bogged down in business logic complexities. It will be connected to a simple back-end database, and allow different products to be added, updated and deleted from the system. 
 
 \section{RESTful API Design}
 The first part of the system to be designed is the REST API for the exemplar micro-service. One of the key features of a micro-service architecture is that it allows the different services to be written in different frameworks and languages, and so the API must be language-agnostic. As such all request and response bodies will use JSON. This means that although the micro-service, based on the technology stack at Hindsight, will be a Node.js service written in TypeScript, theoretically any programming language that can handle JSON payloads will be supported.
@@ -199,11 +199,6 @@ The Mongoose-Pagination-V2 NPM package is a library that provides access to a Mo
 
 Pagination can be fairly easily obtained using vanilla Mongoose via the Skip and Limit operators. Skip simply tells the query to Skip x number of documents, whereas Limit gives an upper bound on the number of documents returned. Pagination can be simulated by setting the value of Skip to the Page Number of the request multiplied by the value of Limit. This will set the starting position of the query to the "Page Number" requested. However this approach does not easily expose the number of available pages to the consumer of the request and so makes iterating through the pagination less friendly. It is also not scalable for huge collections, and the use of Skip and Limit can become CPU and I/O bound for large sets of documents.
 
-SEE NOTE:
-FROM MONGOOSE DOCS 
-The cursor.skip() method is often expensive because it requires the server to walk from the beginning of the collection or index to get the offset or skip position before beginning to return result. As offset (e.g. pageNumber above) increases, cursor.skip() will become slower and more CPU intensive. With larger collections, cursor.skip() may become IO bound.
-REFERENCE THIS LATER
-
 The Mongoose-Pagination-V2 library instead is cursor-based and so does not have the same scalability concerns. It also provides all of the extra meta-data related to pagination and makes exposing exactly what data is being displayed to the user painless.
 
 \subsection{Client specific libraries}
@@ -226,13 +221,12 @@ The OpenAPI Generator provides a huge number of template configurations supporti
 \subsubsection{The typescript-axios templates}
 The base of my handmade REST Client is the Axios HTTP library, and so utilising the typescript-axios configuration for the OpenAPI Generator should make pulling changes across the software fairly simple.
 
-The generated client is also setup as an NPM package, and so fulfils my concerns around easily importing and using the client in Node.js services. As a baseline, the generated code only has TypeScript and Axios as dependencies and therefore has no deprecated libraries in use. This should make it a fairly stable option longterm as Axios and TypeScript are both likely to stick around. 
+The generated client is also setup as an NPM package, and so fulfils my concerns around easily importing and using the client in Node.js services. As a baseline, the generated code only has TypeScript and Axios as dependencies and therefore has no deprecated libraries in use. This should make it a fairly stable option longterm as Axios and TypeScript are both likely to stick around.
+
 \section{Microservice}
 The micro-service is a Express based Node.js service broken down into a three layer architecture: the \emph{data-layer}, \emph{middleware} and \emph{service-layer}.
 
-TODO: we model as a 3 layer.. This will be illustrated using the Shopping microservice as an exemplar
-
-TODO: talk in general context - talk about services in general not this specific micro-service
+It is worth noting again that the complexities of the actual behaviour of the service are unimportant, and all of the design decisions made for this example can be used across any real micro-service. The focus is on the general architectural decisions and choice of libraries and tooling.
 \subsection{data-layer}
 This layer will handle all of the business logic of the service, namely interacting with the database in order to fetch the information sent and requested through the API.
 \subsubsection{models/ShoppingItemModel.ts}
@@ -530,7 +524,9 @@ Some files relating package and actual server configuration do not really belong
 INSERT DIAGRAM SHOWING HOW ALL THE FILES ETC COMMUNICATE I.E. CONTROLLER --> AGENT ETC, FLOW CHART TOO MAYBE? ERROR/SUCCESS FLOW..
 
 \section{API Client}
-The API Client will be built as an NPM Package essentially acting as a wrapper for other imported libraries. The architecture will be simple, with the package essentially broken down into two directories, \emph{utils} and \emph{microservice-client}.
+The next part of the project will be determining the functionality that a generic API Client should have. This will allow me to work out what feature sets need to be added to the generated client templates later on. 
+
+In order to do this I will create a custom handcrafted API client for my micro-service. The API Client will be built as an NPM Package essentially acting as a wrapper for other imported libraries. The architecture will be simple, with the package essentially broken down into two directories, \emph{utils} and \emph{microservice-client}.
 \subsection{utils}
 The \emph{utils} directory will store the more abstract functionality, the methods for generically making HTTP requests and handling errors without the context for the specific micro-service API.
 \subsubsection{Http.ts}
@@ -650,7 +646,7 @@ This directory will be where the actual export functionality of the library will
     
 \section{Modifying the OpenAPI Code Generator}
 \subsection{Generating the Client using the Base Templates}
-In order to generate the Client I will use the openapi-generator-cli NPM package. This means that I do not have to fork and run the whole software stock locally until I have to.
+In order to generate the Client I will use the openapi-generator-cli NPM package. This means that I do not have to fork and run the whole software stack locally until I have to.
 
 Once the OpenAPI Specification has been created, the Client can be generated through simply running the command:
 \begin{verbatim}

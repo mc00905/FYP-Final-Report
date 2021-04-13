@@ -122,18 +122,99 @@ There are two Nocks defined above. The first behaves the same as the previous sp
 The second Nock is a typical successful mocked response for the same endpoint. When the retry is triggered a third and final time this response will be returned. When the \textit{getShoppingItems()} method is called the output should contain the information provided by the final success. As with the previous tests this can be tested by simple asserting the fields provided in the response body outputted by the method.
 \section{End-to-End Testing the Auto-generated Client}
 \subsection{Migrating the Unit Tests from my Client}
-In order to test the auto-generated client I will pull out the unit tests from my client, and copy them across into the generated clients. The tests will require light modification in order to call the different methods but all of the Nock descriptions and assertions on the responses should be transferable.
+In order to test the auto-generated client I will pull out the unit tests from my custom client, and copy them across into the generated client. The tests will require some very light modification but all of the Nock descriptions and assertions on the responses should be transferable. The only modifications should be changes to the names of methods called and any variance in the method signatures.
 
-The clients package.json file will also need some additional libraries to be imported in order for the testing to work, however this will have no bearing on the actual functionality of the client.
+The clients package.json file will also need some additional libraries to be imported in order for the unit tests to run, however this will have no bearing on the actual functionality of the client. These will include the Jest framework and Nock library.
 \section{Results of the Tests}
-Thinking about using screenshots of test coverage etc. not sure if this sections is needed or if is encapsulated under the objectives bit, at its core unit-tests just prove functionality work which is specified by the objs? Interested in your thoughts on that
+In this section I will analyse the Code Coverage reports generated for each of the services to get a general idea of how the test suites truly test the code.
+\FloatBarrier
 \subsection{The Micro-service}
+Overall the coverage for the micro-service was very comprehensive and the target coverage of 85\% was exceeded. Figure 6.1 below shows the full breakdown of the report produced by Jest.
+\begin{figure}[!htb]
+\caption{Code Coverage Report for the Exemplar Micro-service}
+\centering
+\includegraphics[scale=0.62]{FYP_Dissertation_template/Figures/microservice-code-coverage.PNG}
+\end{figure}
+\FloatBarrier
+When writing the unit-tests for the micro-service the key areas of interest where the data-agents, models and controllers. This is where the vast majority of the business logic is stored including the database interactions, data processing and HTTP request and response handling. The coverage on these files is close to 100\% coverage, with only a couple of lines of code not explicitly covered within the ShoppingItemController and ShoppingItemAgent. The report tells us exactly what line is not covered in each file and upon further inspections we can see that it is code relating to the handling of uncaught exceptions, something very hard and not really worth testing for. The report shows us that all of the code that we wanted tested within the files has been covered by the test suite and so we can have a certain degree of confidence within the code. Additionally the coverage on the RateLimiter file is 100\% which again gives confidence in the RateLimiting aspect of the service. The pagination is handled across the models and data-agents and the code handling this functionality is also fully covered by the unit-tests.
+
+In general the vast majority of logic within the application has been tested, the only real gaps in the coverage is relating to exceptions happening out of the blue around the database, and subsequent handling of the error has a HTTP response with a 500 status code.
 \subsection{The Handcrafted Client}
-\subsection{The Auto-generated Client}
-\section{Back to the Objectives}
-Not sure on best way to justify all of this stuff? Just give my reasoning, reference unit-tests and usability testing etc? At surface level everything I've actually finished so far has met all reqs (see client + micro-service) Still need to do last little bits of the auto-gen stuff around template files etc. 
-\subsection{The Micro-service}
+Figure 6.2 shows the report for the Code Coverage of my custom API client. Again, the break-point of 85\% coverage has been exceeded with a total coverage of 91\% for the client.
+\begin{figure}[!htb]
+\caption{Code Coverage Report for the Handcrafted Client}
+\centering
+\includegraphics[scale=0.70]{FYP_Dissertation_template/Figures/handcrafted-client-code-coverage.PNG}
+\end{figure}
+Taking a further look at the report we can see the actual MicroserviceClient file has 100\% code coverage. This file exposes the actual URL endpoints and parameters to the user of the client and full coverage shows that all interactions with the API client are tested, including expected error cases. 
+
+The Http file handles the actual logic of making the requests to the API. Whilst it only has a total code coverage of 88\% if we take a look at the lines not covered we can see that once again they are related to the handling on completely unexpected errors. The actual business logic of the HTTP request and response handling are fully covered. This includes all of the functionality around automatically retrying certain failed requests and the the correct handling of HTTP errors thrown by the API.
+
+The rest of the files are relatively unimportant and only really act as Enumerated types or Type definitions. Despite this coverage of these files is 100\%.
+
+\subsection{The Auto-generated Client with the modifications}
+The report for code coverage of the API client generated from the OpenAPIGenerator templates I modified are shown in Figure 6.3. The unit-tests were pulled out of my handcrafted client and so with some very minor method signature changes, the test-suite itself is identical across the two clients.
+
+\begin{figure}[!htb]
+\caption{Code Coverage Report for the Generated Client with my Modifications}
+\centering
+\includegraphics[scale=0.55]{FYP_Dissertation_template/Figures/modified-client-code-coverage.PNG}
+\end{figure}
+
+Despite sharing the same test-suite, the coverage of the two clients are fairly different. The file structure and code architecture of the clients are vastly different, and the OpenAPISpecification client has a number of extra feature sets baked into the client such as OAuth and Token authorisation handling. As my API does not make use of these features there are no tests covering them, and as such coverage is lower. The important thing is that the tests pass, which all of them do. This shows that the additonal functionally around the automatic request retries and error handling works within the generated client.
+
+The test-suite for the generated client includes one extra unit-test around the OpenAPIGenerators handling of the createShoppingItem() method when no body payload is passed in. Whilst the additional test is unnecessary, I added it just to make sure my modifications didn't break the existing handling of the error format it uses.
+\section{Evaluation against Project Objectives}
+In this section I will look back at the objectives for the project and determine whether they have been met for each piece of software.
+\subsection{The Exemplar Micro-service}
+In order to assess how well the framework meets the project objectives, we will now evaluate them against the exemplar micro-service. This is a simple service that could be used by any shopping application and is designed to showcase the combinations of libraries that would be used in any real micro-service.
+\subsubsection{The Objectives for the Micro-service}
+\begin{enumerate}
+    \item \textit{Use well-formed URLs}
+    \item \textit{Provide endpoints for each of the major HTTP verbs}
+    \item \textit{Assign the correct HTTP status codes to both Success and Error Responses}
+    \item \textit{Validate both request and response payloads}
+    \item \textit{Provide useful documentation for the API}
+    \item \textit{Utilise Rate Limiting}
+    \item \textit{Make use of Pagination on large responses}
+    \item \textit{Provide access to a database to support CRUD usage of different HTTP Verbs}
+\end{enumerate}
+\subsubsection{Use well-formed URLs}
+\subsubsection{Provide endpoints for each of the major HTTP verbs}
+\subsubsection{Assign the correct HTTP status codes to both Success and Error Responses}
+\subsubsection{Validate both request and response payloads}
+\subsubsection{Provide useful documentation for the API}
+\subsubsection{Utilise Rate Limiting}
+\subsubsection{Make use of Pagination on large responses}
+\subsubsection{Provide access to a database to support CRUD usage of different HTTP Verbs}
+
 \subsection{The Handcrafted Client}
+Text goes here...
+\subsubsection{The Objectives for the Handcrafted Client}
+\begin{enumerate}
+    \item \textit{Support all endpoints across the API}
+    \item \textit{Provide details of the responses types returned by endpoints}
+    \item \textit{Provide details of all input parameters for the endpoints}
+    \item \textit{Ensure all important error information is correctly is passed on}
+    \item \textit{Automatically retry requests that fail with certain HTTP status codes}
+\end{enumerate}
+\subsubsection{Support all endpoints across the API}
+\subsubsection{Provide details of the responses types returned by endpoints}
+\subsubsection{Provide details of all input parameters for the endpoints}
+\subsubsection{Ensure all important error information is correctly is passed on}
+\subsubsection{Automatically retry requests that fail with certain HTTP status codes}
 \subsection{The Auto-generated Client}
-Have they been fulfilled etc
-Why, why not
+Text goes here...
+\subsubsection{The Objectives for the Auto-generated Client}
+\begin{enumerate}
+    \item \textit{Support all endpoints across the API}
+    \item \textit{Provide details of the responses types returned by endpoints}
+    \item \textit{Provide details of all input parameters for the endpoints}
+    \item \textit{Ensure all important error information is correctly is passed on}
+    \item \textit{Automatically retry requests that fail with certain HTTP status codes}
+\end{enumerate}
+\subsubsection{Support all endpoints across the API}
+\subsubsection{Provide details of the responses types returned by endpoints}
+\subsubsection{Provide details of all input parameters for the endpoints}
+\subsubsection{Ensure all important error information is correctly is passed on}
+\subsubsection{Automatically retry requests that fail with certain HTTP status codes}
