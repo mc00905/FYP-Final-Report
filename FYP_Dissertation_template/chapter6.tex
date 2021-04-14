@@ -170,6 +170,7 @@ In this section I will look back at the objectives for the project and determine
 In order to assess how well the framework meets the project objectives, we will now evaluate them against the exemplar micro-service. This is a simple service that could be used by any shopping application and is designed to showcase the combinations of libraries that would be used in any real micro-service.
 \subsubsection{The Objectives for the Micro-service}
 \begin{enumerate}
+    \item \textit{Generate an OpenAPI Specification file}
     \item \textit{Use well-formed URLs}
     \item \textit{Provide endpoints for each of the major HTTP verbs}
     \item \textit{Assign the correct HTTP status codes to both Success and Error Responses}
@@ -179,12 +180,89 @@ In order to assess how well the framework meets the project objectives, we will 
     \item \textit{Make use of Pagination on large responses}
     \item \textit{Provide access to a database to support CRUD usage of different HTTP Verbs}
 \end{enumerate}
+\subsubsection{Generate an OpenAPI Specification file}
+The TSOA library provides the facilities for taking the API definitions defined into the controller files and generates an OpenAPI Specification file from them. It does this through the command:
+\begin{verbatim}
+    yarn run tsoa spec
+\end{verbatim}
+The output from this command is either a YAML or JSON OpenAPI Specification.
 \subsubsection{Use well-formed URLs}
+When designing the ShoppingItem API for my micro-service, the API design best practices stated in Chapter 2 were used as a basis.
+
+Those best practises are as follows:
+\begin{enumerate}
+    \item Resources should be named with nouns
+    \item Resource names should be pluralised
+    \item Individual resources should be fetched through use of identifiers
+\end{enumerate}
+The base URL for the REST API is the following:
+\begin{verbatim}
+    /REST/1.0/shoppingItems
+\end{verbatim}
+By looking at the URL we can see that the ShoppingItem resource is named after a noun, and the noun is in it's plural form.
+
+The API endpoint for fetching an individual Shopping item is:
+\begin{verbatim}
+    /REST/1.0/shoppingItems/{name}
+\end{verbatim}
+The endpoint is an extension of the base URL, where {name} is the unique name of the targeted individual resource. This name acts as the unique identifier for the resource which in turn checks of the third best practice.
 \subsubsection{Provide endpoints for each of the major HTTP verbs}
+There are four major HTTP verbs that this objective is referencing: GET, POST, PUT and DELETE. Each of these verbs have associated endpoints within the ShoppingItems API.
+\begin{enumerate}
+    \item GET
+    \begin{verbatim}
+        /REST/1.O/shoppingItems
+        /REST/1.0/shoppingItems/{name}
+    \end{verbatim}
+    \item POST
+    \begin{verbatim}
+        /REST/1.0/shoppingItems
+    \end{verbatim}
+    \item PUT
+    \begin{verbatim}
+        /REST/1.0/shoppingItems/{name}/category
+        /REST/1.0/shoppingItems/{name}/increaseStock
+        /REST/1.0/shoppingItems/{name}/decreaseStock
+    \end{verbatim}
+    \item DELETE
+    \begin{verbatim}
+        /REST/1.0/shoppingItems/{name}
+    \end{verbatim}
+\end{enumerate}
 \subsubsection{Assign the correct HTTP status codes to both Success and Error Responses}
+Correctly assigning HTTP status codes are crucial if consumers are going to successfully use the REST API. The micro-service API follows the standardised assignment of status codes explored in Chapter 2.
+
+Success responses for any request that returns a resource  are assigned a 200 status code alongside the response body. For the creation of a new resource the status code 201 is assigned and a 204 status code is used when a resource is deleted.
+
+When a resource is not found a status code of 404 is used, and in the case of a bad request 400 is used. Any unexpected error on the server side is assigned a 500 status code. A request that breaks the rate limits of the API is assigned a 429 status code.
 \subsubsection{Validate both request and response payloads}
+The TSOA library is used for creating all of the routing and API generation for the micro-service. Out of the box TSOA handles all of the validation for the API endpoints, using TypeScript types to validate both incoming and outgoing payloads and blocking any that do match the expected format.
+
+When an endpoint is defined that takes in a request body, such as the endpoint associated with the creation of a new ShoppingItem, the body is cast as a TypeScript type. When a request hits the API endpoint TSOA takes the body from the HTTP message and compares it to the assigned type. If there are missing required fields, has unexpected fields or the body is of an unexpected format then it will throw a ValidationError with a 400 status code to the consumer.
+
+Similarly the response body is defined by a TypeScript type and assigned to the return type of the controller method associated with the endpoint. As TypeScript is a strongly-typed language this tightly weaves the response into the lower level code handling the business logic of the request. If the method that the controller calls returns a different type then TypeScript itself will thrown an error on compile time.
 \subsubsection{Provide useful documentation for the API}
+The micro-service has the ability to generate an OpenAPI Specification representing a full definition of it's API. The swagger-ui-express library takes this document and parses it into a HTML page fully detailing the endpoints using the information provided in the specification. An API endpoint that serves this page can be assigned to the server, allowing the creation of a full documentation endpoint that any user can hit to get the details of the API.
+
+Whilst this library generates the actual page, it works in tandem with TSOA. When TSOA generates the OpenAPI specification it scours the types and methods used for both additional decorators and JSDoc notation. These optional additions to the files allows developers to add a large volume of extra information and descriptions to various fields, methods and payloads. This extra data is then injected into specification file. By documenting the code itself, developers can automatically generate fully descriptive API documentation.
+\begin{figure}[!htb]
+\caption{Documentation snippet from the micro-service documentation URL}
+\centering
+\includegraphics[scale=0.41]{FYP_Dissertation_template/Figures/doc-example.PNG}
+\end{figure}
+\FloatBarrier
+Figure 6.4 above shows part of this HTML page. Information relating to each of the query parameters, an overall endpoint description and example response payload are provided.
+
+Outside of acting as documentation, the swagger-ui-express library also allows requests to be made directly through the web-page, saving time writing complex and tedious CURL commands when testing the API.
 \subsubsection{Utilise Rate Limiting}
+The express-rate-limit library is used to add rate-limiting functionality to the micro-service. Whilst it is a relatively simple integrations, applying a global rate limit to the service rather than a per user limit, it works fine as a proof of concept. Outside of intercepting requests that would break the limit and throwing a 429 error, it also inject a number of rate limit meta-data headers into the responses of the API.
+\begin{figure}[!htb]
+    \caption{Example of Rate Limit response headers provided by the API}
+\centering
+\includegraphics[scale=0.6]{FYP_Dissertation_template/Figures/rate-limit.PNG}
+\end{figure}
+\FloatBarrier
+The above figure shows the response headers include information about the rate limit itself, number of remaining requests before the limit is exceeded and a timestamp for when the current limit expires. This information can be used by the API consumer in order to request any failed requests, or plan how to make a series of requests to the API.
 \subsubsection{Make use of Pagination on large responses}
 \subsubsection{Provide access to a database to support CRUD usage of different HTTP Verbs}
 
