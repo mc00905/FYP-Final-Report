@@ -205,7 +205,7 @@ The API endpoint for fetching an individual Shopping item is:
 \begin{verbatim}
     /REST/1.0/shoppingItems/{name}
 \end{verbatim}
-The endpoint is an extension of the base URL, where {name} is the unique name of the targeted individual resource. This name acts as the unique identifier for the resource which in turn checks of the third best practice.
+The endpoint is an extension of the base URL, where {name} is the unique name of the targeted individual resource. This name acts as the unique identifier for the resource which in turn checks off the third best practice.
 \subsubsection{Provide endpoints for each of the major HTTP verbs}
 There are four major HTTP verbs that this objective is referencing: GET, POST, PUT and DELETE. Each of these verbs have associated endpoints within the ShoppingItems API.
 \begin{enumerate}
@@ -264,8 +264,19 @@ The express-rate-limit library is used to add rate-limiting functionality to the
 \FloatBarrier
 The above figure shows the response headers include information about the rate limit itself, number of remaining requests before the limit is exceeded and a timestamp for when the current limit expires. This information can be used by the API consumer in order to request any failed requests, or plan how to make a series of requests to the API.
 \subsubsection{Make use of Pagination on large responses}
-\subsubsection{Provide access to a database to support CRUD usage of different HTTP Verbs}
+The micro-service breaks down requests returning multiple resources into chunks called pages. Through usage of the mongoose-paginate-v2 library this pagination is done directly at the database request level. When the data-agent queries the database, the library wraps the request and returns a subset of the result based on optional parameters passed into the method signature. It also provides a number of meta-data fields providing additional information about the pagination including total number of pages and the current page number.
 
+By handling the pagination at the data-agent layer, we do not have to do any additional processing on the request in order to pull out the pages resulting in simpler and more accessible code. It also allows a number of query parameters to be provided at the controller level which can simply be plugged into the optional paging parameters in the data-agents methods signature. This allows the API consumer to cycle through the pages by passing in the desired information into the query parameters, with default options selected if none of these parameters are provided.
+
+A paginated response example is shown in Figure 6.6 below.
+\begin{figure}[!htb]
+    \caption{Example of Paginated Response provided by the API}
+\centering
+\includegraphics[scale=0.4]{FYP_Dissertation_template/Figures/pagination-example.PNG}
+\end{figure}
+\FloatBarrier
+\subsubsection{Provide access to a database to support CRUD usage of different HTTP Verbs}
+The micro-service connects to a MongoDB database which stores all of the services resource information. When the createShoppingItems() method is called a new document is created in the ShoppingItems collection and operations fetching, modifying and deleting the resource(s) can be triggered through the API and data-agent.
 \subsection{The Handcrafted Client}
 Text goes here...
 \subsubsection{The Objectives for the Handcrafted Client}
