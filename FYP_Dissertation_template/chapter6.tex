@@ -41,7 +41,7 @@ Once a request is intercepted the mock is consumed. This allows different instan
 
 All of the unit tests for my API Client will make use of Nock so that it can be tested in isolation from the micro-service.
 \subsection{Code Coverage Target}
-Oftentimes it can be extremely challenging to hit one hundred percent code coverage. While I will aim to hit as close to complete coverage as possible, I will be aiming for a minimum of eighty five percent of overall code coverage for both the client and micro-service. There are likely to be certain parts of the code that aren't feasible to reach during unit-testing, particularly around handling of unexpected failures around the database connections.
+Oftentimes it can be extremely challenging to hit one hundred percent code coverage. While I will aim to hit as close to complete coverage as possible, I will be aiming for a minimum of 85\% of overall code coverage for the important files within both the client and micro-service. There are likely to be certain parts of the code that aren't feasible to reach during unit-testing, particularly around handling of unexpected failures around the database connections.
 \subsection{Unit Testing the Micro-service}
 The testing of the micro-service will be broken down into two key sections, testing that the controllers work and respond as expected, and that the data-agents process and store the data correctly.
 \subsubsection{Testing the Controllers}
@@ -126,44 +126,69 @@ In order to test the auto-generated client I will pull out the unit tests from m
 
 The clients package.json file will also need some additional libraries to be imported in order for the unit tests to run, however this will have no bearing on the actual functionality of the client. These will include the Jest framework and Nock library.
 \section{Results of the Tests}
-In this section I will analyse the Code Coverage reports generated for each of the services to get a general idea of how the test suites truly test the code.
+In this section I will analyse the Code Coverage reports generated for each of the services to get a general idea of how comprehensively the test suites  cover the code-base.
 \FloatBarrier
+\subsection{Reading the Code Coverage Reports}
+The generated reports contain a detailed breakdown of which files and components of the code are covered, as well as details of the degree to which they are covered. It breaks the coverage down into four key sections, Statements, Branches, Functions and Lines. It also lists the lines in the code which are not covered at all in tests. For the purpose of this report I am going to omit analysis of the Line coverage, as I think the other 3 aspects are more important.
+\subsubsection{Statements}
+This covers the Statements within the software. Variable assignment, function calls and return values all fall under under this umbrella and the reports details how many of these statements have been executed when the tests have been run. Statement coverage should typically be relatively high as you want the core of your code base to be heavily tested, covering most of the expected use case for the software. However if there are some niche branching paths or function calls that can be difficult to reach with unit tests, it might be unfeasible, or simply not worth the time investment, to strive for full coverage.
+\subsubsection{Branches}
+The branch coverage shows how many of the branches in the applications control flow have been executed. Typical examples for this are your standard if or switch statements. Maintaining 100\% coverage on control flow can be very difficult, and there are likely to be branches within the code that are not really expected to execute unless in the case of things like server failures. Writing unit tests covering these cases can be time consuming, and as they are not a typical use case of the software, oftentimes are not worth the time investment.
+\subsubsection{Functions}
+Function coverage should be as close to 100\% as possible and unit tests should be in place for every important function in the application. The function report details how many of the defined functions have actually been executed within the unit tests.
+\subsubsection{Lines}
+The line coverage tracks how many of the lines within the applications codes have been executed and in the same vein as branch coverage, can be extremely hard to reach perfect coverage. That being said aiming for as high a value as possible within sensible time constraints is best.
 \subsection{The Micro-service}
-Overall the coverage for the micro-service was very comprehensive and the target coverage of 85\% was exceeded. Figure 6.1 below shows the full breakdown of the report produced by Jest.
+The report below shows the Code Coverage report for the ShoppingItems micro-service.
 \begin{figure}[!htb]
 \caption{Code Coverage Report for the Exemplar Micro-service}
 \centering
 \includegraphics[scale=0.62]{FYP_Dissertation_template/Figures/microservice-code-coverage.PNG}
 \end{figure}
 \FloatBarrier
-When writing the unit-tests for the micro-service the key areas of interest where the data-agents, models and controllers. This is where the vast majority of the business logic is stored including the database interactions, data processing and HTTP request and response handling. The coverage on these files is close to 100\% coverage, with only a couple of lines of code not explicitly covered within the ShoppingItemController and ShoppingItemAgent. The report tells us exactly what line is not covered in each file and upon further inspections we can see that it is code relating to the handling of uncaught exceptions, something very hard and not really worth testing for. The report shows us that all of the code that we wanted tested within the files has been covered by the test suite and so we can have a certain degree of confidence within the code. Additionally the coverage on the RateLimiter file is 100\% which again gives confidence in the RateLimiting aspect of the service. The pagination is handled across the models and data-agents and the code handling this functionality is also fully covered by the unit-tests.
+The files we are particularly interested in tracking are \textit{ShoppingItemAgent}, \textit{ShoppingItemModel}, \textit{RateLimiter} and \textit{ShoppingItemController} as this is where the vast majority of the business and application logic is stored.
+\subsubsection{Statements}
+Starting with the statement coverage on \textit{ShoppingItemAgent} we can see that the file has 98\% coverage. The report shows the line 40 of the file is uncovered, and upon inspection we can see that it is handling any unexpected errors thrown by the database. I haven't written any unit test cases covering this and due to time constraints of the project I opted just to leave them as I deemed them fairly unimportant. The 98\% coverage exceeds my previously stated desired coverage of 85\%.
 
-In general the vast majority of logic within the application has been tested, the only real gaps in the coverage is relating to exceptions happening out of the blue around the database, and subsequent handling of the error has a HTTP response with a 500 status code.
+\textit{ShoppingItemModel} has 100\% statement coverage as does \textit{RateLimiter}.
+
+\textit{ShoppingItemController} reaches 97\% coverage, with a single uncovered line at line 106. Looking at line 106 in the codebase we can see that it is handling any unexpected errors thrown. As stated before, writing test cases for these events is time consuming and so I opted to move on. Once again, coverage exceeds that of the target. 
+\subsubsection{Branches}
+The branches follow the exact same pattern as the statement report, with the files without full coverage being impacted by the same lines once again and so I will not go into any more detail on the matter here.
+
+\textit{ShoppingItemModel} \textit{RateLimiter} both had 100\% branch coverage, \textit{ShoppingItemAgent} reached 94\% coverage and \textit{ShoppingItemController} reached 86\% coverage. All files exceeded target.
+
+\subsubsection{Functions}
+All of the files being watched maintain 100\% function coverage in the report.
 \subsection{The Handcrafted Client}
-Figure 6.2 shows the report for the Code Coverage of my custom API client. Again, the break-point of 85\% coverage has been exceeded with a total coverage of 91\% for the client.
+Figure 6.2 shows the report for the Code Coverage of my custom API client.
 \begin{figure}[!htb]
 \caption{Code Coverage Report for the Handcrafted Client}
 \centering
 \includegraphics[scale=0.70]{FYP_Dissertation_template/Figures/handcrafted-client-code-coverage.PNG}
 \end{figure}
-Taking a further look at the report we can see the actual MicroserviceClient file has 100\% code coverage. This file exposes the actual URL endpoints and parameters to the user of the client and full coverage shows that all interactions with the API client are tested, including expected error cases. 
+\FloatBarrier
 
-The Http file handles the actual logic of making the requests to the API. Whilst it only has a total code coverage of 88\% if we take a look at the lines not covered we can see that once again they are related to the handling on completely unexpected errors. The actual business logic of the HTTP request and response handling are fully covered. This includes all of the functionality around automatically retrying certain failed requests and the the correct handling of HTTP errors thrown by the API.
+The key files we will be looking at are \textit{MicroserviceClient} and \textit{Http}. The other files are mainly utility files providing Enums and Type declarations.
+\subsubsection{Statements}
+Statements coverage of \textit{MicroserviceClient} is 100\% and coverage of \textit{Http} is 95\%. Both reaching the targeted coverage.
 
-The rest of the files are relatively unimportant and only really act as Enumerated types or Type definitions. Despite this coverage of these files is 100\%.
+If we dive into the uncovered lines within the \textit{Http} file we can see lines 43 and 44 handle any unexpected errors when physically sending the request. Errors under this category would typically be any sort of internet connection issues and as the focus of my testing is on the actual interactions with the API, I have not created any test suites for these cases.
+\subsubsection{Branches}
+The coverage for branches within \textit{MicroserviceClient} is 100\% and for \textit{Http} is 81\%.
 
+The \textit{Http} coverage fails to reach the 85\% coverage, but upon inspection we can see that it is only one branch that is not covered, the same code mentioned in the statement report analysis. Covering this case has no real bearing on the success of the project, and so I will opt to leave it be for now.
+\subsubsection{Functions}
+Both targeted files reaches 100\% function coverage within the test suites.
 \subsection{The Auto-generated Client with the modifications}
-The report for code coverage of the API client generated from the OpenAPIGenerator templates I modified are shown in Figure 6.3. The unit-tests were pulled out of my handcrafted client and so with some very minor method signature changes, the test-suite itself is identical across the two clients.
-
+The report for code coverage of the API client generated from the OpenAPIGenerator templates I modified are shown in Figure 6.3. The unit tests were pulled out of my handcrafted client and so with some very minor method signature changes, the test-suite itself is mostly identical across the two clients.
 \begin{figure}[!htb]
 \caption{Code Coverage Report for the Generated Client with my Modifications}
 \centering
 \includegraphics[scale=0.55]{FYP_Dissertation_template/Figures/modified-client-code-coverage.PNG}
 \end{figure}
-
-Despite sharing the same test-suite, the coverage of the two clients are fairly different. The file structure and code architecture of the clients are vastly different, and the OpenAPISpecification client has a number of extra feature sets baked into the client such as OAuth and Token authorisation handling. As my API does not make use of these features there are no tests covering them, and as such coverage is lower. The important thing is that the tests pass, which all of them do. This shows that the additonal functionally around the automatic request retries and error handling works within the generated client.
-
-The test-suite for the generated client includes one extra unit-test around the OpenAPIGenerators handling of the createShoppingItem() method when no body payload is passed in. Whilst the additional test is unnecessary, I added it just to make sure my modifications didn't break the existing handling of the error format it uses.
+\FloatBarrier
+I am not going to break down the report for the generated client. There is a lot of functionality within the client I do not care about in the context of this project, and my focus is that the actual test cases I have transferred from my own client pass, as these represent the objectives I will be measuring the success of the generator changes against. As we can see in the figure above, all of the tests passed.
 \section{Evaluation against Project Objectives}
 In this section I will look back at the objectives for the project and determine whether they have been met for each piece of software.
 \subsection{The Exemplar Micro-service}
