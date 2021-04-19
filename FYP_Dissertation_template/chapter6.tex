@@ -179,7 +179,7 @@ The coverage for branches within \textit{MicroserviceClient} is 100\% and for \t
 
 The \textit{Http} coverage fails to reach the 85\% coverage, but upon inspection we can see that it is only one branch that is not covered, the same code mentioned in the statement report analysis. Covering this case has no real bearing on the success of the project, and so I will opt to leave it be for now.
 \subsubsection{Functions}
-Both targeted files reaches 100\% function coverage within the test suites.
+Both targeted files reached 100\% function coverage within the test suites.
 \subsection{The Auto-generated Client with the modifications}
 The report for code coverage of the API client generated from the OpenAPIGenerator templates I modified are shown in Figure 6.3. The unit tests were pulled out of my handcrafted client and so with some very minor method signature changes, the test-suite itself is mostly identical across the two clients.
 \begin{figure}[!htb]
@@ -301,9 +301,9 @@ A paginated response example is shown in Figure 6.6 below.
 \end{figure}
 \FloatBarrier
 \subsubsection{Provide access to a database to support CRUD usage of different HTTP Verbs}
-The micro-service connects to a MongoDB database which stores all of the services resource information. When the createShoppingItems() method is called a new document is created in the ShoppingItems collection and operations fetching, modifying and deleting the resource(s) can be triggered through the API and data-agent.
+The micro-service connects to a MongoDB database which stores all of the services resource information. When the createShoppingItem() method is called a new document is created in the ShoppingItems collection and operations fetching, modifying and deleting the resource(s) can be triggered through the API and data-agent.
 \subsection{The Handcrafted Client}
-Text goes here...
+By evaluating my handcrafted client against its objectives, I can determine whether it successfully fulfilled its function.
 \subsubsection{The Objectives for the Handcrafted Client}
 \begin{enumerate}
     \item \textit{Support all endpoints across the API}
@@ -313,12 +313,89 @@ Text goes here...
     \item \textit{Automatically retry requests that fail with certain HTTP status codes}
 \end{enumerate}
 \subsubsection{Support all endpoints across the API}
+The client contains methods for calling each of the endpoints exposed by the API, with the exception of the endpoint:
+\begin{verbatim}
+    GET /REST/1.0/documentation
+\end{verbatim}
+
+An API consumer would never have to call this endpoint during an integration, and it would instead be used by the API server to create a public facing documentation page.
+
+The methods and their corresponding endpoints are detailed in the table below.
+
+\begin{table}[hbt!]
+\centering
+\caption{Method name to URL mapping for the Handcrafted Client}
+\label{tab:handcrafted-client-ref-table}
+\begin{tabular}{ll}
+\hline
+\multicolumn{1}{|l|}{\textbf{Method Name}}                  & \multicolumn{1}{l|}{\textbf{URL Endpoint}}\\ \hline
+\multicolumn{1}{|l|}{getShoppingItems()}           & \multicolumn{1}{l|}{GET /REST/1.0/shoppingItems}                        \\ \hline
+\multicolumn{1}{|l|}{getShoppingItem()}            & \multicolumn{1}{l|}{GET /REST/1.0/shoppingItems/\{name\}}               \\ \hline
+\multicolumn{1}{|l|}{createShoppingItem()}         & \multicolumn{1}{l|}{POST /REST/1.0/shoppingItems}                       \\ \hline
+\multicolumn{1}{|l|}{deleteShoppingItem()}         & \multicolumn{1}{l|}{DELETE /REST/1.0/shoppingItems/\{name\}}            \\ \hline
+\multicolumn{1}{|l|}{updateShoppingItemCategory()} & \multicolumn{1}{l|}{PUT /REST/1.0/shoppingItems/\{name\}/category}      \\ \hline
+\multicolumn{1}{|l|}{increaseShoppingItemStock()}  & \multicolumn{1}{l|}{PUT /REST/1.0/shoppingItems/\{name\}/increaseStock} \\ \hline
+\multicolumn{1}{|l|}{decreaseShoppingItemStock()}  & \multicolumn{1}{l|}{PUT /REST/1.0/shoppingItems/\{name\}/decreaseStock} \\ \hline               
+\end{tabular}
+\end{table}
+\FloatBarrier
+
 \subsubsection{Provide details of the responses types returned by endpoints}
+The handcrafted client is built using TypeScript which allows us to build up Types for each of the response bodies returned by the API. The Axios library  uses generics to provide details of the expected response type of the request. By casting the return types of each method to the custom response types I defined, Axios will inject this typing into the data object that it returns.
+
+Figure 6.7 shows an example of this casting.
+\begin{figure}[!htb]
+    \caption{Example Response Type Casting}
+\centering
+\includegraphics[scale=0.6]{FYP_Dissertation_template/Figures/handcrafted-client-response-type-casting.PNG}
+\end{figure}
+\FloatBarrier
+
+Consumers of the method can then access all of the fields from the response when the data field is pulled out of the methods output.
+
+Figure 6.8 shows the usage of this data field.
+\begin{figure}[!htb]
+    \caption{Example Usage of the Response Typings}
+\centering
+\includegraphics[scale=0.6]{FYP_Dissertation_template/Figures/handcrafted-client-response-type-return.PNG}
+\end{figure}
+\FloatBarrier
 \subsubsection{Provide details of all input parameters for the endpoints}
+As with detailing the shapes of the responses, TypeScript allows type casting for each of the input parameters for methods. These input parameters each represent the various path, query and request body parameters for the API endpoints, and proper type definitions within the method signatures allow full details of these parameters to be exposed to the user.
+
+Figure 6.9 below shows how the client exposes the typings of these fields through the method signature.
+\begin{figure}[!htb]
+    \caption{Example Usage of the Request Typings}
+\centering
+\includegraphics[scale=0.57]{FYP_Dissertation_template/Figures/handcrafted-client-request-typings.PNG}
+\end{figure}
+\FloatBarrier
 \subsubsection{Ensure all important error information is correctly is passed on}
+The handcrafted client makes use of a custom Axios interceptor to catch and handle any errors thrown during the requests. The fields are pulled out of the error payload and are used to create a local instance of the same ErrorWrapper that the the micro-service itself throws. This ensures that both the server and client in the request cycle are using the same error format when a request fails.
+
+The unit test suite contains a number of test case that explicitly check that these errors are handled as expected.
+
+Figure 6.10 shows a passing unit test that checks the error thrown on a request that is expected to fail.
+\begin{figure}[!htb]
+    \caption{Example Unit Test for Error Handling}
+\centering
+\includegraphics[scale=0.57]{FYP_Dissertation_template/Figures/handcrafted-client-error-handling.PNG}
+\end{figure}
+\FloatBarrier
 \subsubsection{Automatically retry requests that fail with certain HTTP status codes}
-\subsection{The Auto-generated Client}
-Text goes here...
+The client makes use of the \textit{axios-retry} library to retry failed requests. The library injects an Axios interceptor that checks the HTTP status code of the failed response, and if it falls under the subset of codes that should be retried, it will re-submit the request. Each request can be retried a total of 3 times before the request is aborted and an error message is bubbled back up to the user.
+
+The test suite contains a set of tests that validate this behaviour. These tests cover both successful and failed retry attempts and give enough coverage to give confidence in the feature. The key focus for these tests is retrying rate limited requests.
+
+The unit tests covering retrying rate limited requests are shown below in Figure 6.11.
+\begin{figure}[!htb]
+    \caption{Example Unit Test for Retrying Rate Limited Requests}
+\centering
+\includegraphics[scale=0.45]{FYP_Dissertation_template/Figures/rate-limited-handcrafted.PNG}
+\end{figure}
+\FloatBarrier
+\subsection{The Modified Auto-generated Client}
+The final component of the project was taking the default Typescript-Axios template for the OpenAPIGenerator and modifying it to produce a generated client that will satisfy the same objectives as my home-brewed client. Evaluation of the objectives against a client generated for the micro-service API are detailed in the following section, however a client generated for any API would workt.
 \subsubsection{The Objectives for the Auto-generated Client}
 \begin{enumerate}
     \item \textit{Support all endpoints across the API}
@@ -328,7 +405,33 @@ Text goes here...
     \item \textit{Automatically retry requests that fail with certain HTTP status codes}
 \end{enumerate}
 \subsubsection{Support all endpoints across the API}
+The OpenAPIGenerator uses a number of Mustache template files to define the shape of the generated code. Information is pulled out of the OpenAPI Specification for the API and used to populate parameters within these template files. These populated templates are then used by a templating engine to create the files containing the code. As the specification generated by the micro-service contains definitions for each of the API endpoints, the generated client will in turn contain methods handling all of them too. 
+
+The only endpoint missing from the specification, and subsequently the client, is the endpoint serving the API documentation. This however is by design as this endpoint is not needed for operation of the API itself.
+
+The table below shows a mapping of the various API endpoints to the associated client methods.
+
+\begin{table}[hbt!]
+\centering
+\caption{Method name to URL mapping for the Generated Client}
+\label{tab:handcrafted-client-ref-table}
+\begin{tabular}{ll}
+\hline
+\multicolumn{1}{|l|}{\textbf{Method Name}}                  & \multicolumn{1}{l|}{\textbf{URL Endpoint}}\\ \hline
+\multicolumn{1}{|l|}{getShoppingItems()}           & \multicolumn{1}{l|}{GET /REST/1.0/shoppingItems}                        \\ \hline
+\multicolumn{1}{|l|}{getShoppingItem()}            & \multicolumn{1}{l|}{GET /REST/1.0/shoppingItems/\{name\}}               \\ \hline
+\multicolumn{1}{|l|}{createShoppingItem()}         & \multicolumn{1}{l|}{POST /REST/1.0/shoppingItems}                       \\ \hline
+\multicolumn{1}{|l|}{deleteShoppingItem()}         & \multicolumn{1}{l|}{DELETE /REST/1.0/shoppingItems/\{name\}}            \\ \hline
+\multicolumn{1}{|l|}{updateShoppingItemCategory()} & \multicolumn{1}{l|}{PUT /REST/1.0/shoppingItems/\{name\}/category}      \\ \hline
+\multicolumn{1}{|l|}{increaseShoppingItemStock()}  & \multicolumn{1}{l|}{PUT /REST/1.0/shoppingItems/\{name\}/increaseStock} \\ \hline
+\multicolumn{1}{|l|}{decreaseShoppingItemStock()}  & \multicolumn{1}{l|}{PUT /REST/1.0/shoppingItems/\{name\}/decreaseStock} \\ \hline               
+\end{tabular}
+\end{table}
+\FloatBarrier
 \subsubsection{Provide details of the responses types returned by endpoints}
+The templates used for client generation are also based on the Axios library. As with my client, the generated client injects types into the generic Axios method calls to define the shape of the response bodies returned when the requests are made. 
+
+There are however some slight differences between the two clients. Where my custom types were statically defined, the types within the generated are built using information provided from the specification file themselves. Functionally this produces the same result, with the library providing details of the response bodies for each request through the data object returned by Axios.
 \subsubsection{Provide details of all input parameters for the endpoints}
 \subsubsection{Ensure all important error information is correctly is passed on}
 \subsubsection{Automatically retry requests that fail with certain HTTP status codes}
