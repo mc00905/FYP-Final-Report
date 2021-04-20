@@ -1,8 +1,31 @@
 \chapter{Evaluation of the New Framework}
-Small section separate from the other testing
-Why is it good
-- does it solve problem - reminder of what that problem is an issue etc
-What have I achieved
-Imagine pitching a product
+\section{What is the Purpose of this Project}
+Over the course of the project I have built up a collection of libraries and tools that can be used to rapidly speed up the development of sets RESTful micro-services. The overarching aim was to streamline the process of creating the API for a micro-service and then consuming the API from another service. 
 
-TODO: talk about project-settings micro-service rework coming up - generation of client for the service + use of TSOA
+Typically there can be a number of headaches during these processes and a number of the issues that I have come across whilst working at Hindsight 
+served as inspiration for this project. 
+
+Some of the core issues the project aimed to address are summarised below:
+\begin{itemize}
+    \item Ensuring the request and response payloads are being handled correctly between services
+    \item Having to manually look up and define the TypeScript types representing the API payloads for every API a service consumes
+    \item Losing details about thrown errors when requests travel through multiple micro-services
+    \item Lots of duplicated client code, with each micro-service consuming the same API containing different variations of the same code
+    \item Lack of support for handling soft failure cases, such as rate limiting. Particularly a problem when interacting with large scale commercial APIs such as the GitHub and Bitbucket APIs
+\end{itemize}
+
+\section{The Framework}
+Whilst not explicitly a formal framework, the suite of libraries and tools used in the creation of the example micro-service and API client will be utilised in the same way a framework would. Overall both of the exemplar applications have fulfilled their requirements fully which bodes extremely well for live usage of the framework.
+\subsection{Creating the API for a Micro-service}
+One of my biggest takeaways from the development of the Shopping micro-services was how little time was actually spent on it. Creation of the API itself took a couple of hours at most, with the library TSOA handling the vast majority of the heavy lifting involved. The only real work involved from me was ensuring that the actual design of the API was solid and met the requirements I had set for it. This is done through defining both the URL endpoints for the API and the TypeScript Type definitions for each of the request and response payloads that the API would receive and send respectively. All of the incoming and outgoing data is fully validated by TSOA using these definitions, ensuring that only the explicitly defined data formats and fields are processed without rejection.
+
+TSOA also generates an OpenAPI Specification representing the API which can be pulled out and used in client generation without any input from me. The specification file has the added benefit of generating living documentation for the API when used in tandem with the Swagger-UI-Express library. As modifications are made to the API a new specification can be generated, which in turn leads to new documentation being served to the user. Substantially less time needs to be spent documenting the API with all of the information used being pulled directly out of the code, whether it be out of the TypeScript Type definitions, or through JSDoc style comments. This intertwines the code-base and the API documentation very tightly which in turn helps to ensure that as changes are made to one, the other accurately represents them.
+
+Error handling and pagination of results were both also specified within the Objectives for the micro-service. During development of the micro-service I designed and integrated a custom error message format that can be used to pass far more detailed error information through sets of micro-services. By designing a format that can be used across all future micro-services we can ensure that the errors are handled correctly across the board, with minimal loss of any meta-data associated with them. This error format was tied into custom middleware for handling errors thrown by the service and ensuring it was correctly packaged and passed forward as the new format.
+
+Pagination was injected directly into the MongoDB database. By handling it at the lowest level far less boilerplate wrapping responses from database queries needs to be written, and parameters specifying page size and number can be passed directly from the controller level down to the data level. It also helps to standardise usage of pagination and the same query parameters specifying the size and iteration of the pages can be used across all of the APIs for a set of micro-services.
+
+The framework was pain free to use, and allowed me to get the service up and running extremely quickly. Although the micro-service created was simple and just an example for how it would be used in the future, the framework allowed me to quickly get stuck into the actual business logic and functionalities of the service. This is key to successfully shipping software, as wasting time on what is essentially configuration prevents you from delivering features to end users.
+\subsection{Modular Client Generation using API Specification Files}
+\section{Using the Framework at Hindsight}
+Moving forward the aim is to integrate the framework at Hindsight. It will be used to create any new micro-services at Hindsight and any existing services that consume the new ones will make use of the client generation to communicate with the APIs.
