@@ -1,11 +1,9 @@
 \chapter{Testing and Evaluation}
 \section{Introduction}
 
-This section will detail my plans on how I will test my solutions, and how I will determine how they have measured up against the specifications defined for them.
+This section will detail my plans on how I will test the framework that I have put together and how I will evaluate how well it meets the objectives and specifications that I have defined for it.
 
-TODO: emphasis on the framework, not the example usage of the framework. How to test the framework with these pieces as an example
 
-There will be two main testing approaches throughout the project, individual Unit Testing on different components of the software, and more end-user oriented end-to-end testing where I will be actual using the functionality and deeming it functional. 
 \section{Unit Testing with SuperTest, Jest and Nock}
 
 My Unit Tests for both the micro-service and the client will use a number of key libraries, SuperTest, Jest and Nock. Whilst they will test the sample services I have created, the main aim will be to produce a suite of tools for general micro-service testing.
@@ -127,6 +125,8 @@ In order to test the auto-generated client I will pull out the unit tests from m
 The clients package.json file will also need some additional libraries to be imported in order for the unit tests to run, however this will have no bearing on the actual functionality of the client. These will include the Jest framework and Nock library.
 \section{Results of the Tests}
 In this section I will analyse the Code Coverage reports generated for each of the services to get a general idea of how comprehensively the test suites  cover the code-base.
+
+TODO: assertive statements, they give this comprehensive.... talk about the detailed breakdowns etc
 \FloatBarrier
 \subsection{Reading the Code Coverage Reports}
 The generated reports contain a detailed breakdown of which files and components of the code are covered, as well as details of the degree to which they are covered. It breaks the coverage down into four key sections, Statements, Branches, Functions and Lines. It also lists the lines in the code which are not covered at all in tests. For the purpose of this report I am going to omit analysis of the Line coverage, as I think the other 3 aspects are more important.
@@ -140,6 +140,8 @@ Function coverage should be as close to 100\% as possible and unit tests should 
 The line coverage tracks how many of the lines within the applications codes have been executed and in the same vein as branch coverage, can be extremely hard to reach perfect coverage. That being said aiming for as high a value as possible within sensible time constraints is best.
 \subsection{The Micro-service}
 The report below shows the Code Coverage report for the ShoppingItems micro-service.
+
+TODO: talk about Cost Benefit Analysis on Testing/Risk Management on the more Business Critical logic
 \begin{figure}[!htb]
 \caption{Code Coverage Report for the Exemplar Micro-service}
 \centering
@@ -149,6 +151,8 @@ The report below shows the Code Coverage report for the ShoppingItems micro-serv
 The files we are particularly interested in tracking are \textit{ShoppingItemAgent}, \textit{ShoppingItemModel}, \textit{RateLimiter} and \textit{ShoppingItemController} as this is where the vast majority of the business and application logic is stored.
 \subsubsection{Statements}
 Starting with the statement coverage on \textit{ShoppingItemAgent} we can see that the file has 98\% coverage. The report shows the line 40 of the file is uncovered, and upon inspection we can see that it is handling any unexpected errors thrown by the database. I haven't written any unit test cases covering this and due to time constraints of the project I opted just to leave them as I deemed them fairly unimportant. The 98\% coverage exceeds my previously stated desired coverage of 85\%.
+
+TODO: more formal..
 
 \textit{ShoppingItemModel} has 100\% statement coverage as does \textit{RateLimiter}.
 
