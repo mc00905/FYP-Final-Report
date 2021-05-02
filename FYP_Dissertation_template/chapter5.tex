@@ -1,13 +1,13 @@
 \chapter{System Design}
 \section{Introduction}
 
-In this section of the report I will explain and justify the design decisions I have made relating to both the architecture of my systems, and the libraries they employ.
+The project aims to bring together a set of libraries and tools together in such a way that any number of micro-services can be generated and integrated together with ease, whilst still fulfilling the best practices and requirements that I have set out for them. In order to showcase how these systems work together I am going to create an exemplar micro-service and API client using them. This section of the report will explain and justify the design decisions I have made when curating the list of libraries and tools as well as detailing the actual architecture and system design of the services.
 
-The project is going to consist of three differing systems. The first will be an exemplar Node.js TypeScript RESTful micro-service, developed to showcase techniques to develop the services in general.  It will be a pretty basic service, fulfilling the basic functionality expected of a modern micro-service. The second will be a TypeScript NPM module, acting as a client library that consumes the API of the micro-service and allows the Node.js service that imports the module to access the API. The final part of the project is a number of modifications made to the OpenAPI Generator typescript-axios templates. These changes will add any missing functionality to the generated client, using my NPM module as a baseline.
+The project is going to produce three differing systems. The first will be an exemplar Node.js TypeScript RESTful micro-service, developed to showcase techniques to develop the services in general.  It will be a pretty basic service, fulfilling the basic functionality expected of a modern micro-service. The second will be a TypeScript NPM module, acting as a client library that consumes the API of the micro-service and allows the Node.js service that imports the module to access the API. The final part of the project is a number of modifications made to the OpenAPI Generator typescript-axios templates. These changes will add any missing functionality to the generated client, using my NPM module as a baseline.
 
 \subsection{Client-Server API Interactions}
 
-The foundation of the project is in the interactions between micro-services. Each individual micro-service will utilise a RESTful API to expose its functionality to other services within the application through the use of HTTP requests. This follows the typical Client-Server model, where the service making the request acts as the client, and the owner of the API being requested acts as the server. Any number of micro-services can make requests to any of the APIs within the overarching application and so the system design needs to facilitate this in a scalable way.
+A foundational goal of the project is to manage effectively the interactions between micro-services. Each individual micro-service will utilise a RESTful API to expose its functionality to other services within the application through the use of HTTP requests. This follows the typical Client-Server model, where the service making the request acts as the client, and the owner of the API being requested acts as the server. Any number of micro-services can make requests to any of the APIs within the overarching application and so the system design needs to facilitate this in a scalable way.
 
 TODO: INSERT API - API CLIENT DIAGRAM HERE
 
@@ -147,7 +147,7 @@ PUT /REST/1.0/shoppingItems/{name}/category
 
 \section{Technologies and Libraries}
 
-The next stage of the design process is going to be determining any libraries and frameworks that I am going to use in the software. There is no point in redesigning the wheel, and well established libraries provide robust and well-tested solutions to common problems.
+Having introduced the exemplar micro-service, I will now walk through the libraries and frameworks that I have collected together to support the generation of composable micro-services. The specific choices have been made in order to put together a way of working that meets the requirements for micro-service development that were identified in Chapter 3. The results of this project are intended to be used for the generation of production level code and so it is important to use well-established libraries in order to provide robust and well-tested solutions to the problems in micro-service architectures that have previously been found when developing large scale projects.
 
 \subsection{Node.js}
 The micro-service will be implemented using the Node.js run-time environment. This allows me to model the micro-service after the micro-services used at Hindsight and has the added benefit of providing me with familiarity, meaning I don't have to learn anything new. Node.js is used industry wide for back-end APIs due to its asynchronous and non-blocking event handling and is also relatively lightweight whilst maintaining good performance. Through the use of NPM, a package manager for Node.js, hundred of thousands of public libraries and modules can be imported and utilised, providing access to well-tested and reliable code. This allows Node.js developers to avoid writing common code, as well as providing them to modularise their code into both public and private packages that can be shared across code bases. During the development of both the micro-service and the client I will be importing a number of public NPM packages into my code.
@@ -204,7 +204,7 @@ The Mongoose-Pagination-V2 library instead is cursor-based and so does not have 
 \subsection{Client specific libraries}
 In this section I will look at  the tools and libraries I will within the API Client, as well as how I plan on publishing the client as a module. 
 \subsubsection{Creating the Client as an NPM Library}
-Seeing as the project is based on Node.js micro-services, configuring the Client library as an NPM library makes the most sense. The Client can easily be packaged and published to the NPM registry, either publicly or privately, and the micro-services can then readily install and utilise it. This also allows me to import other NPM packages as dependencies for my client, saving on the amount of otherwise unnecessary home-brewed code. Physically publishing the package is out of scope of this project, but the fundamental setup for the process will be done.
+Seeing as the project is based on Node.js micro-services, configuring the client library as an NPM library makes the most sense. The client can easily be packaged and published to the NPM registry, either publicly or privately, and the micro-services can then readily install and utilise it. This also allows me to import other NPM packages as dependencies for my client, saving on the amount of otherwise unnecessary home-brewed code. Physically publishing the package is out of scope of this project, but the fundamental setup for the process will be done.
 \subsubsection{Axios}
 The key functionality of an API client is making requests to an API, and so choosing the right library for making HTTP requests is key.
 
@@ -671,7 +671,7 @@ Rather than jumping straight into modifying the Mustache template files, I can i
 
 Adding support for the automatic retries on failed requests will be relatively simple, all I need to is add the axios-retry as a dependency and inject the same code I use within my code, into the AxiosInstance that the generated API used.
 
-Parsing the errors thrown by the client will be handled in a similiar way. The file defining the custom ErrorWrapper class can simply be cut out of my code and pasted within the generated library, and the code for handling the error thrown can be cut out of my AxiosInstance definitions and used to catch the errors thrown by the new API client.
+Parsing the errors thrown by the client will be handled in a similar way. The file defining the custom ErrorWrapper class can simply be cut out of my code and pasted within the generated library, and the code for handling the error thrown can be cut out of my AxiosInstance definitions and used to catch the errors thrown by the new API client.
 
 I will then test that the behaviour of the client is as expected by creating a test script that calls each of the API endpoints. The inputs will be a mixture of valid and invalid parameters to check to see that successful requests are still handled correctly, and that any errors thrown are sent in format that is expected. If all of the changes work as expected, I can move onto abstracting all of these changes into the template files.
 \subsection{Modifying the template files}
@@ -681,6 +681,16 @@ The custom ErrorWrapper class file can simply be cut and pasted within the templ
 
 In the same vein getting the automatic retries working simply involves adding the axios-retry library into the template NPM package.json file  before cut-pasting the module setup into the AxiosInstance definitions.
 
-Once the templates have been modified I can generate a new client using them. From that point I can use the same test script I used in the modifications to the vanilla client in order to check the functionality is still working.
+Once the templates have been modified I can generate a new client using them. The client generated should be identical to the that I modified. The command used to generate the client using the new templates is almost identical to the previously used command, with the addition of another field specifying template directory.
+
+The command is:
+\begin{verbatim}
+    openapi-generator-cli generate 
+    -g typescript-axios
+    -t PATH_TO_TEMPLATE_DIRECTORY
+    -i PATH_TO_SPECIFICATION
+    -o OUTPUT_DIR
+    --additional-properties=npmName=CLIENTNAME,
+\end{verbatim}
 \subsection{Conclusion}
 In this chapter I have looked at the libraries I will be using in development of the software as well as API design and software architecture of the solutions. I have also described and made justifications all of the design decisions made, specifically around the interactions between the different layers of the micro-service and the file breakdown of my custom API client. A breakdown and explanation of how I plan on adding functionality into the OpenAPI Generator has also been described.
