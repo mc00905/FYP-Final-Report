@@ -520,9 +520,6 @@ Some files relating package and actual server configuration do not really belong
     node dist/Server.js
 \end{verbatim}
 
-\subsection{Overall Service Diagram}
-INSERT DIAGRAM SHOWING HOW ALL THE FILES ETC COMMUNICATE I.E. CONTROLLER --> AGENT ETC, FLOW CHART TOO MAYBE? ERROR/SUCCESS FLOW..
-
 \section{API Client}
 The next part of the project will be determining the functionality that a generic API Client should have. This will allow me to work out what feature sets need to be added to the generated client templates later on. 
 
@@ -680,6 +677,8 @@ The modifications that need to be made to the template files used in the generat
 The custom ErrorWrapper class file can simply be cut and pasted within the template file directory, and the code defining up the error handler can be pulled from my API and copied into the templates. This will all be appended onto the template code relating to setting up the AxiosInstance that forms the basic of the API requests.
 
 In the same vein getting the automatic retries working simply involves adding the axios-retry library into the template NPM package.json file  before cut-pasting the module setup into the AxiosInstance definitions.
+
+\subsection{Generating a client with the new templates}
 
 Once the templates have been modified I can generate a new client using them. The client generated should be identical to the that I modified. The command used to generate the client using the new templates is almost identical to the previously used command, with the addition of another field specifying template directory.
 

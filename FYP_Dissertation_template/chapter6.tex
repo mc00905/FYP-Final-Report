@@ -192,7 +192,7 @@ The report for code coverage of the API client generated from the OpenAPIGenerat
 \end{figure}
 \FloatBarrier
 I am not going to break down the report for the generated client. There is a lot of functionality within the client I do not care about in the context of this project, and my focus is that the actual test cases I have transferred from my own client pass, as these represent the objectives I will be measuring the success of the generator changes against. As we can see in the figure above, all of the tests passed.
-\section{Evaluation against Project Objectives}
+\section{Evaluation against Project Requirements and Specifications}
 In this section I will look back at the objectives for the project and determine whether they have been met for each piece of software.
 \subsection{The Exemplar Micro-service}
 In order to assess how well the framework meets the project objectives, we will now evaluate them against the exemplar micro-service. This is a simple service that could be used by any shopping application and is designed to showcase the combinations of libraries that would be used in any real micro-service.
@@ -436,5 +436,10 @@ The templates used for client generation are also based on the Axios library. As
 
 There are however some slight differences between the two clients. Where my custom types were statically defined, the types within the generated are built using information provided from the specification file themselves. Functionally this produces the same result, with the library providing details of the response bodies for each request through the data object returned by Axios.
 \subsubsection{Provide details of all input parameters for the endpoints}
+As with the response details, the Typescript code generated uses information from the specification to create strongly typed methods for each of the API endpoints. 
+
+Each method contains typed method parameters representing each of the URL parameters, query parameters or request body. Individual URL or query parameters are assigned a TypeScript type best matching the type in the specification. In the case of fields that can only match specific values, enumeration types are generated. Any JSON payload from the specification generates a TypeScript interface that the field is then assigned.
 \subsubsection{Ensure all important error information is correctly is passed on}
+Both the custom error wrapper and the error handler middleware are pulled out of my handcrafted client, and injected in an identical way into the templates for the OpenAPI Generator. This results in the behaviour being identical across the two clients, with the test-suite covering cases validating this.
 \subsubsection{Automatically retry requests that fail with certain HTTP status codes}
+As with the error handling, the mechanism for retrying failed requests is shared across both the handcrafted client, and the client template for the generator.  Functionally the two clients handle the retries identically, and both services contain unit-tests covering this functionality.

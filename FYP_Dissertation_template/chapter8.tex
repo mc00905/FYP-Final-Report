@@ -1,9 +1,19 @@
 \chapter{Conclusion}
+\section{Overview of the Project}
 
-overview of report.. we have done.. we have shown...
+We started the project by looking at the lessons learned during my time at Hindsight, and identified a number of common problems that have been observed when working with a RESTful Micro-service architecture. These issues were used as the inspiration for the project and were used to produce both the Objectives for the project as a whole, and the Requirements for the actual framework produced. We looked at best practices and standards for RESTful APIs in general alongside a couple of contemporary alternative API methodologies. We also looked at what a micro-service is at its core, and how the approach differs from a more traditional monolithic software architecture.
 
-emphasise why its good in general, but why THIS approach is better than other takes on it, Ruby on Rails etc
+Ethical concerns for the project were then detailed and the actual Requirements for the software components were defined. Once I had the list of Requirements, work began on the design of the framework itself, both on the development on the code, and the process for ensuring it was tested properly.
 
-future work: auto-generated tests with Nocks created from the specifications - maybe feasible maybe not
-             actual rate limiting based on header info - x-rate-limit..... out of scope for microservice but client
-            could consume this information and base the retries on these timouts etc
+Overall the project has been a success. As shown in the latter half of Chapter 6 and in Chapter 7 the Requirements for the different software components were all met, and the actual framework produced works well. 
+
+The framework provides the facilities to quickly develop RESTful micro-services and allows generation of an API client from the services API specification. The micro-services serve API documentation from a documentation endpoint providing details for entire API. This includes all the information needed to effectively make use of the API, whether it be information about how requests are to be made to the API or the shape and format of the responses returned by it.
+
+A unit test-suite was developed for each of the examples showcasing the framework, covering all of the cases laid out by the Software Requirements. In Chapter 6 we showed that this test-suite not only passed fully, but also provided ample code coverage of the software. This level of code coverage allows more confidence to be had in the tests, as it shows exactly what is and isn't covered.
+
+The biggest indicator of success though is the fact that the framework is already starting to see usage at Hindsight, showing that it is in a good enough state to produce production level code used in our live services.
+
+\section{Enhancing the Framework in the Future}
+\subsection{More advanced Rate-limit support for the micro-services}
+\subsection{More intelligent mechanism for retrying rate-limited requests}
+\subsection{Generated test-suite for the API client outputted from the OpenAPI Generator}
