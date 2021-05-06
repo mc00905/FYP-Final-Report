@@ -55,7 +55,7 @@ Overall, there are use cases for both architectural styles. Monoliths work very 
 
 \section{RESTful API Architecture}
 
-REST is an acronym for Representation State Transfer. REST follows the client-server architectural paradigm and is stateless, the client and server do not need to know about the others state. This paradigm allows different clients, all implemented differently, to interact with the same server, in the same way, and receive the same responses. Changes made to the clients have no bearing on the server whatsoever.
+REST is an acronym for Representation State Transfer, a term first coined by Roy Fielding in his doctoral thesis \cite{fielding}. REST follows the client-server architectural paradigm and is stateless, the client and server do not need to know about the others state. This paradigm allows different clients, all implemented differently, to interact with the same server, in the same way, and receive the same responses. Changes made to the clients have no bearing on the server whatsoever.
 
 Information in a RESTful API is abstracted out as a Resource. State is the information stored under the resource. When a client makes a request to the server, the format of the response, I.e. the Representation of the data, is specified and the data is returned in that format. Essentially RESTful APIs work by getting the client to describe exactly what they want, and how they want to receive it.
 \subsection{REST Requests}

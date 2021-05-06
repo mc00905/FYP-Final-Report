@@ -3,7 +3,7 @@
 
 This section will detail my plans on how I will test the framework that I have put together and how I will evaluate how well it meets the objectives and specifications that I have defined for it. 
 
-Creating a test suite for micro-services typically involves a lot of different moving parts, and I will begin by explaining how I collected a number of libraries and tools to create a comprehensive set of unit tests. I will showcase these tools by creating an exemplar test suite for the shopping micro-service, with all of the design and architectural decisions made during the development of the test suite being explained. Whilst the test suite will be written for the micro-service developed for this project, the design and implementation of the unit tests will be applicable for any micro-service built using the template that I have created.
+Creating a test suite for micro-services typically involves a lot of different moving parts, and I will begin by explaining how I collected a number of libraries and tools to create a comprehensive set of unit tests. I will showcase these tools by creating an exemplar test suite for the shopping micro-service, with all of the design and architectural decisions made during the development of the test suite being explained. Whilst the test suite will be written for the exemplar micro-service developed for this project, the methodology for the design and implementation of the unit tests will be applicable for any micro-service built using the template that I have created.
 
 
 Each of the software components need to be evaluated against the original objectives and specifications lined out for them. The second half of the chapter will contain this evaluation with justification for whether I feel that the individual objectives have been met.
@@ -38,13 +38,15 @@ Nock is a Node.js library used for mocking HTTP requests. Nock intercepts the HT
 
 It is particularly useful for interacting with external APIs as it mimics the request sent by the consuming service without actually interacting within the API. This allows the unit tests to be run without connecting to the internet or running any of the dependencies of the service being tested locally. 
 
-Nock allows creation of highly configurable mocks and every component of the requests and responses can be tweaked. This includes everything from headers to status codes.
+Nock allows creation of highly configurable mocks and every component of the requests and responses can be refined. This includes everything from headers to status codes.
 
 Once a request is intercepted the mock is consumed. This allows different instances of the exact same request to return different responses. This is particularly useful for testing things like rate limit handling, as the first few requests which are limited will fail with a 429 status code, but subsequent requests that are not limited will return successfully.
 
 All of the unit tests for my API Client will make use of Nock so that it can be tested in isolation from the micro-service.
 \subsection{Code Coverage Target}
 Oftentimes it can be extremely challenging to hit one hundred percent code coverage. While I will aim to hit as close to complete coverage as possible, I will be aiming for a minimum of 85\% of overall code coverage for the important files within both the client and micro-service. There are likely to be certain parts of the code that aren't feasible to reach during unit-testing, particularly around handling of unexpected failures around the database connections.
+
+It is important in software projects to identify a suitable balance between effort involved in increasing coverage targets and the benefits gained. Whilst the process of identifying test objectives is out of scope for this project, we have informally used a risk-based testing approach \cite{Amland} to focus tests on those areas of code with highest exposure, and reduced testing effort on low exposure areas of code where the potential impact of faults is low. The important result is that the test tools that have been identified fully support risk-based testing.
 \subsection{Unit Testing the Micro-service}
 The testing of the micro-service will be broken down into two key sections, testing that the controllers work and respond as expected, and that the data-agents process and store the data correctly.
 \subsubsection{Testing the Controllers}
@@ -129,7 +131,7 @@ In order to test the client generated from the OpenAPI Generator I will pull out
 
 The clients package.json file will also need some additional libraries to be imported in order for the unit tests to run, however this will have no bearing on the actual functionality of the client. These will include the Jest framework and Nock library.
 \section{Results of the Tests}
-In this section I will analyse the Code Coverage reports generated for each of the services to get a general idea of how comprehensively the test suites cover the code-base. The test suite has been designed to focus on the actual business logic of the micro-service and the clients. This is where the core functionality of the systems are located, and some areas of the code do not have specific tests covering them, specifically around failures on database connection or any sort of network connection error. This will lead to some expected gaps in the coverage, which should be shown via line details in the report.
+In this section I will analyse the Code Coverage reports generated for each of the services to get a general idea of how comprehensively the test suites cover the code-base. The test suite has been designed to focus on the actual business logic of the micro-service and the clients. This is where the core functionality of the systems are located, and some areas of the code do not have specific tests covering them, specifically around failures on database connection or any sort of network connection error. This will lead to some expected gaps in the coverage, which should be shown via line details in the report. If these gaps in coverage are subsequently identified as high risk areas in a quality review, the reports provide sufficient detail to identify the areas for which additional tests should be defined
 \subsection{Reading the Code Coverage Reports}
 The generated reports contain a detailed breakdown of which files and components of the code are covered, as well as details of the degree to which they are covered. It breaks the coverage down into four key sections, Statements, Branches, Functions and Lines. It also lists the lines in the code which are not covered at all in tests. For the purpose of this report I am going to omit analysis of the Line coverage, as I think the other 3 aspects are more important.
 \subsubsection{Statements}
