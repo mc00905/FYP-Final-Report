@@ -1,11 +1,33 @@
 \chapter{Legal, Social, Ethical and Professional Issues}
 \section{Introduction}
-TODO:
-\section{Statement of Ethics}
-TODO:
-Talk about avoiding compromising IP from Hindsight through use of generic exemplar services
-No real data collection to talk about so no ethical concerns there
-No privacy/GDPR stuff
-Literally can only really think about ethics stemming from my employement
+In this chapter the various factors for consideration throughout this project will be reviewed. These factors ranged from legal and ethical concerns, to those regarding the social and professional impact this project would have on both Hindsight, and the community in general.
 
-ALSO need to do the form thingy
+\section{Legal Considerations}
+My main legal concern was ensuring that Intellectual Property is not breached, both concerning Hindsight and any libraries that I use in the project.
+
+All of the libraries and tools used across the project are fully open source, allowing fair usage of the technology without any legal concern.
+
+Information regarding specific business logic of the micro-services used at Hindsight was deliberately omitted, with a generic exemplar micro-service being developed in their stead. This allowed me to work through the project without any concerns around the breach of any confidential intellectual property that Hindsights services contain.
+
+\subsection{Computer Misuse Act}
+This project is fully compliant with the Computer Misuse Act of 1990, with a number of considerations being taken into account across the development of the project.
+
+None of the software produced would fall under malware, and care was taken when choosing the libraries used by the project to ensure that they are all widely used and frequently updated. Choosing widely known and trusted libraries reduces the chance of third party malware being injected into the code-base, furthermore NPM provides tools to audit libraries for any known vulnerabilities adding another degree of protection.
+
+No user data needed to be collected for this project, so any concerns around illegal or even unethical collection were avoided.
+
+\subsection{Data Protection Act}
+As stated previously this project contained no data collection. That being said had collection been necessary, any data stored would have been stored on an encrypted hard-drive on my business MacBook. The MacBook is secured with both a pass-code and a YubiKey, providing adequate security for any stored data.
+\section{Social Considerations}
+The overarching aim of this project is to produce a framework for developing RESTful micro-service architectures without spending excessive amounts of time on service configuration and communication between services. This would allow developers to spend more time on the actual business logic driving new functionality. This results in improvements to both individual developer job satisfaction as they can spend more of their time working on the interesting parts of the code-base and the profitability from the business side of things by reducing development time.
+\section{Ethical Considerations}
+\subsection{Privacy and Consent}
+No data is being collected during development or by the software developed and so privacy and consent is not really an issue.
+\subsection{Agency and Identity}
+The framework produced over the course of the project aims to offer some guidelines when developing micro-services, rather than imposing a stringent way of working.
+\section{Professional Considerations}
+Over the course of the project I followed the same professional standards as I would when working on any Hindsight project.
+
+All development took place on properly secured and audited machines to safeguard the developed code and any other information stored on the computers.
+
+All code developed was treated the same way as any production ready code would be, with sensible naming conventions and code style being followed throughout. 

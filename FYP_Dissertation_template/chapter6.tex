@@ -445,3 +445,6 @@ Each method contains typed method parameters representing each of the URL parame
 Both the custom error wrapper and the error handler middleware are pulled out of my handcrafted client, and injected in an identical way into the templates for the OpenAPI Generator. This results in the behaviour being identical across the two clients, with the test-suite covering cases validating this.
 \subsubsection{Automatically retry requests that fail with certain HTTP status codes}
 As with the error handling, the mechanism for retrying failed requests is shared across both the handcrafted client, and the client template for the generator.  Functionally the two clients handle the retries identically, and both services contain unit-tests covering this functionality.
+
+\section{Conclusion}
+In this chapter I detailed the strategies used when testing the software as well as recording the results of this testing. The systems were then evaluated against the specifications originally set in Chapter 3.

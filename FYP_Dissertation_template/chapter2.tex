@@ -99,7 +99,9 @@ One important note about REST is that it is not a formal protocol, and is instea
 
 \section{Alternatives to REST APIs}
 \subsection{SOAP APIs}
-Simple Objects Access Protocol is an XML based messaging protocol. Compared to REST it is far more verbose and rigid. SOAP is typically used by financial institutions, it's rigid nature is ideal for usecases where security is  a priority. For general usage SOAP requests and responses contain vast swathes of bloat, which in turn slows down communication. With SOAP you are also locked into using XML, which compared to more contemporary approaches like JSON, is less user-friendly and far less human-readable.
+Simple Objects Access Protocol is an XML based messaging protocol. SOAP originated as the XML-RPC specification \cite{xmlrpc} released by Microsoft in 1998, iterating through several versions before version 1.2 \cite{soap1.2} reached W3C Recommendation status. This status indicates that the standard is ready for public consumption, having been tested and reviewed thoroughly.
+
+Compared to REST it is far more verbose and rigid. SOAP is typically used by financial institutions, it's rigid nature is ideal for usecases where security is  a priority. For general usage SOAP requests and responses contain vast swathes of bloat, which in turn slows down communication. With SOAP you are also locked into using XML, which compared to more contemporary approaches like JSON, is less user-friendly and far less human-readable.
 
 All of this reduces the viability of SOAP for use in micro-service APIs, the overhead is just too great compared to RESTful APIs.
 
